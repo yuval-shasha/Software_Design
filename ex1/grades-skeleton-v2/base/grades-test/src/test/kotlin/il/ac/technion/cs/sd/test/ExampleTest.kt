@@ -17,6 +17,7 @@ import java.io.FileNotFoundException
 
 import il.ac.technion.cs.sd.app.GradesReader
 import il.ac.technion.cs.sd.app.GradesInitializer
+import il.ac.technion.cs.sd.grades.external.LineStorage
 
 
 class ExampleTest {

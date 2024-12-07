@@ -1,1 +1,10 @@
+ex1/grades-skeleton-v2/base/buildSrc/build/
+ex1/grades-skeleton-v2/base/buildSrc/.gradle/
+ex1/grades-skeleton-v2/base/.idea/
+ex1/grades-skeleton-v2/base/.gradle/
 ex1/grades-skeleton-v2/base/gradle.properties
+ex1/grades-skeleton-v2/base/gradle/wrapper/gradle-wrapper.jar
+ex1/grades-skeleton-v2/base/gradle/wrapper/gradle-wrapper.properties
+ex1/grades-skeleton-v2/base/grades-app/build/
+ex1/grades-skeleton-v2/base/grades-test/build/
+ex1/grades-skeleton-v2/base/library/build/

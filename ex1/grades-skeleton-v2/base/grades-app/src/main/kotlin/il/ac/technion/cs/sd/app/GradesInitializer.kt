@@ -6,6 +6,6 @@ import il.ac.technion.cs.sd.lib.StorageLibrary
 class GradesInitializer {
     /** Saves csvData persistently, so that it could be run using GradesRunner. */
     fun setup(csvData: String) {
-        TODO("Implement me!")
+        StorageLibrary.initializeDatabase(csvData)
     }
 }

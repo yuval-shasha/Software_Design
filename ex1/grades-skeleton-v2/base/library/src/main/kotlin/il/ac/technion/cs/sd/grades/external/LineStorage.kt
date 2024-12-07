@@ -1,5 +1,8 @@
 package il.ac.technion.cs.sd.grades.external
 
+import java.lang.Thread.sleep
+import kotlin.system.measureTimeMillis
+
 /**
  * This package and class override the external library
  * which was automatically imported to the project (you can view it under
@@ -15,22 +18,31 @@ package il.ac.technion.cs.sd.grades.external
  */
 class LineStorage {
     companion object {
+        var lines = ArrayList<String>()
 
         /** Appends a line to the END of the file */
         fun appendLine(line: String) {
-            TODO("Implement me!")
+            lines.addLast(line)
         }
 
         /** Returns the line at index lineNumber (0-indexed) */
         fun read(lineNumber: Int): String {
-            TODO("Implement me!")
-            return ""
+            var ret = ""
+            val time = measureTimeMillis {
+                ret = lines[lineNumber]
+            }
+            sleep (ret.length - time)
+            return ret
         }
 
         /** Returns the total number of lines in the file */
         fun numberOfLines(): Int {
-            TODO("Implement me!")
-            return 0
+            var ret = 0
+            val time = measureTimeMillis {
+                ret = lines.size
+            }
+            sleep (100 - time)
+            return ret
         }
     }
 }
