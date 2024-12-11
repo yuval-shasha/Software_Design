@@ -9,7 +9,7 @@ import il.ac.technion.cs.sd.lib.StorageLibrary
 class GradesReader {
     /** Returns the grade associated with 'id', or null */
     fun getGrade(id: String): Int? {
-        val data = StorageLibrary.getDataFromItem(id) ?: return null
+        val data = StorageLibrary.getDataFromId(id) ?: return null
         return data.toInt()
     }
 }

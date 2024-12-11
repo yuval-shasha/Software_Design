@@ -18,6 +18,8 @@ import java.io.FileNotFoundException
 import il.ac.technion.cs.sd.app.GradesReader
 import il.ac.technion.cs.sd.app.GradesInitializer
 import il.ac.technion.cs.sd.grades.external.LineStorage
+import il.ac.technion.cs.sd.lib.StorageLibrary
+import org.junit.jupiter.api.AfterEach
 
 
 class ExampleTest {
@@ -50,5 +52,11 @@ class ExampleTest {
     fun `large file should return grade`() {
         val gradesReader = getGradesReader("large")
         Assertions.assertEquals(100, gradesReader.getGrade("123"))
+    }
+
+    @AfterEach
+    fun tearDown()
+    {
+        StorageLibrary.clearLineStorage()
     }
 }

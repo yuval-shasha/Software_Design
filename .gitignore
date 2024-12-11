@@ -8,3 +8,16 @@ ex1/grades-skeleton-v2/base/gradle/wrapper/gradle-wrapper.properties
 ex1/grades-skeleton-v2/base/grades-app/build/
 ex1/grades-skeleton-v2/base/grades-test/build/
 ex1/grades-skeleton-v2/base/library/build/
+grades-skeleton-v2.zip
+grades-skeleton-v2/base/build.gradle.kts
+grades-skeleton-v2/base/gradle.properties
+grades-skeleton-v2/base/gradlew
+grades-skeleton-v2/base/gradlew.bat
+grades-skeleton-v2/base/settings.gradle.kts
+grades-skeleton-v2/base/.gradle/
+grades-skeleton-v2/base/.idea/
+grades-skeleton-v2/base/buildSrc/
+grades-skeleton-v2/base/grades-app/build.gradle.kts
+grades-skeleton-v2/base/grades-test/build.gradle.kts
+grades-skeleton-v2/base/gradle/
+grades-skeleton-v2/base/library/build.gradle.kts

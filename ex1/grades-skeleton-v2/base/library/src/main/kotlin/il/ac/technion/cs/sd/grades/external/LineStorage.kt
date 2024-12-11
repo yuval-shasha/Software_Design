@@ -18,31 +18,31 @@ import kotlin.system.measureTimeMillis
  */
 class LineStorage {
     companion object {
-        var lines = ArrayList<String>()
+        var storedLines = ArrayList<String>()
 
         /** Appends a line to the END of the file */
         fun appendLine(line: String) {
-            lines.addLast(line)
+            storedLines.addLast(line)
         }
 
         /** Returns the line at index lineNumber (0-indexed) */
         fun read(lineNumber: Int): String {
-            var ret = ""
+            var lineAtLineNumber = ""
             val time = measureTimeMillis {
-                ret = lines[lineNumber]
+                lineAtLineNumber = storedLines[lineNumber]
             }
-            sleep (ret.length - time)
-            return ret
+            sleep (lineAtLineNumber.length - time)
+            return lineAtLineNumber
         }
 
         /** Returns the total number of lines in the file */
         fun numberOfLines(): Int {
-            var ret = 0
+            var numberOfLines = 0
             val time = measureTimeMillis {
-                ret = lines.size
+                numberOfLines = storedLines.size
             }
             sleep (100 - time)
-            return ret
+            return numberOfLines
         }
     }
 }
