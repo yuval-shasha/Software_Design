@@ -8,7 +8,7 @@ import il.ac.technion.cs.sd.grades.external.LineStorage
  * you will need to update the import statements in GradesInitializer.kt
  * and in GradesReader.kt.
  */
-class StorageLibrary {
+class StorageLibrary private constructor(){
     companion object {
         // return the line in the LineStorage that starts with the provided id
         // return null if the id is not found

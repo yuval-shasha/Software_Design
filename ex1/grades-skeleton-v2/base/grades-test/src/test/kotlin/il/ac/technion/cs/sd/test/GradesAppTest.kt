@@ -50,17 +50,14 @@ class GradesAppTest {
             Assertions.assertEquals(null, gradesReader.getGrade("12345"))
         }
     }
-
-    /*
-    // TODO: create a file with 1 million distinct ids and complete parameters in the test
+    
     @Test
     fun `noDuplicatesLong file should return the only grade associated with student id`() {
         assertTimeout(Duration.ofSeconds(10)) {
             val gradesReader = getGradesReader("noDuplicatesLong")
-            Assertions.assertEquals(null, gradesReader.getGrade("null"))
+            Assertions.assertEquals(54, gradesReader.getGrade("497946"))
         }
     }
-     */
 
     @Test
     fun `withDuplicatesShort file should return the last grade associated with student id`() {
@@ -83,6 +80,14 @@ class GradesAppTest {
         assertTimeout(Duration.ofSeconds(10)) {
             val gradesReader = getGradesReader("withDuplicatesLong")
             Assertions.assertEquals(348, gradesReader.getGrade("50204972"))
+        }
+    }
+
+    @Test
+    fun `oneStudentLong file should return the last grade associated with the only student id`() {
+        assertTimeout(Duration.ofSeconds(10)) {
+            val gradesReader = getGradesReader("oneStudentLong")
+            Assertions.assertEquals(82, gradesReader.getGrade("1"))
         }
     }
 
