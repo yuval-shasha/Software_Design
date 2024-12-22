@@ -7,7 +7,7 @@ package il.ac.technion.cs.sd.books.app
 interface BookScoreReader {
 
     /**
-     * Returns true iff a reviewer with ID reviewerId has reviewed the book
+     * Returns true if a reviewer with ID reviewerId has reviewed the book
      * with ID bookId. If either the reviewer or the book does not exist,
      * returns false
      */
