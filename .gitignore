@@ -21,3 +21,16 @@ grades-skeleton-v2/base/grades-app/build.gradle.kts
 grades-skeleton-v2/base/grades-test/build.gradle.kts
 grades-skeleton-v2/base/gradle/
 grades-skeleton-v2/base/library/build.gradle.kts
+ex2/books-skeleton-v1/base/gradle.properties
+ex2/books-skeleton-v1/base/gradlew.bat
+ex2/books-skeleton-v1/base/gradlew
+ex2/books-skeleton-v1/base/settings.gradle.kts
+ex2/books-skeleton-v1/base/.gradle/
+ex2/books-skeleton-v1/base/.idea/
+ex2/books-skeleton-v1/base/books-app/build.gradle.kts
+ex2/books-skeleton-v1/base/books-test/build.gradle.kts
+ex2/books-skeleton-v1/base/buildSrc/
+ex2/books-skeleton-v1/base/library/build.gradle.kts
+ex2/books-skeleton-v1/base/gradle/wrapper/gradle-wrapper.properties
+ex2/books-skeleton-v1/base/gradle/wrapper/gradle-wrapper.jar
+ex2/books-skeleton-v1/base/gradle/libs.versions.toml
