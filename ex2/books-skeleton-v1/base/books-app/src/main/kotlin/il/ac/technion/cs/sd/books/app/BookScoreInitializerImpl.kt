@@ -1,16 +1,19 @@
 package il.ac.technion.cs.sd.books.app
 
+import com.google.inject.Inject
 import com.google.inject.name.Named
 import il.ac.technion.cs.sd.books.lib.*
 import java.util.*
 
 class BookScoreInitializerImpl : BookScoreInitializer
 {
+    @Inject
     @Named("ReviewersDB")
-    lateinit var reviewersDB: StorageLibrary
+    private lateinit var reviewersDB: StorageLibrary
 
+    @Inject
     @Named("BooksDB")
-    lateinit var booksDB: StorageLibrary
+    private lateinit var booksDB: StorageLibrary
 
     // Merges all the sub-keys of each key.
     private fun Sequence<Reviewer>.mergeAllBooksReviewedByReviewer() : Sequence<Reviewer> =

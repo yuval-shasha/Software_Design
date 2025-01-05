@@ -6,10 +6,12 @@ data class BookWithScore(val name: String, val score: Int) : KeyValueElement(nam
 {
     companion object
     {
-        fun xml(konsumer: Konsumer) : BookWithScore
+        fun xml(konsumer: Konsumer): BookWithScore
         {
             konsumer.checkCurrent("Review")
-            return BookWithScore(konsumer.childText("Id"), konsumer.childText("Score").toInt())
+            val bookName = konsumer.childText("Id")
+            val bookScore = konsumer.childText("Score").toInt()
+            return BookWithScore(bookName, bookScore)
         }
     }
 }
@@ -18,10 +20,16 @@ data class Reviewer(val id: String, val reviews: List<BookWithScore>) : KeyListO
 {
     companion object
     {
-        fun xml(konsumer: Konsumer) : Reviewer
+        fun xml(konsumer: Konsumer): Reviewer
         {
             konsumer.checkCurrent("Reviewer")
-            return Reviewer(konsumer.attributes["id"], konsumer.children("Review") { BookWithScore.xml(this) })
+            val reviewerId = konsumer.attributes["Id"]
+            val reviews = konsumer.children("Review")
+            {
+                BookWithScore.xml(this)
+            }
+
+            return Reviewer(reviewerId, reviews)
         }
     }
 }
@@ -32,7 +40,13 @@ class XMLParser
     {
         fun parseXMLFileToReviewsListByReviewer(xmlString: String) : List<Reviewer>
         {
-            return xmlString.konsumeXml().use { konsumer -> konsumer.child("Root") { konsumer.children("Reviewer") { Reviewer.xml(this) } } }
+            return xmlString.konsumeXml().use { konsumer ->
+                konsumer.child("Root") {
+                    this.children("Reviewer") {
+                        Reviewer.xml(this)
+                    }
+                }
+            }
         }
     }
 }

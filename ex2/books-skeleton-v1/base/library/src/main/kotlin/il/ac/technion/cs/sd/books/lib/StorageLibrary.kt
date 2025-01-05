@@ -67,6 +67,7 @@ class StorageLibrary @Inject constructor()
     }
 
     // Creates the LineStorageInstance
+    @Inject
     fun createDatabase(fileName: String)
     {
         val injector = Guice.createInjector(LineStorageModule())

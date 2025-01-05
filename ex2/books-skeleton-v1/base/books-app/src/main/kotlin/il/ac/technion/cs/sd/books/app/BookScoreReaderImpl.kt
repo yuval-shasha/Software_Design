@@ -1,15 +1,18 @@
 package il.ac.technion.cs.sd.books.app
 
+import com.google.inject.Inject
 import com.google.inject.name.Named
 import il.ac.technion.cs.sd.books.lib.StorageLibrary
 
 class BookScoreReaderImpl : BookScoreReader
 {
+    @Inject
     @Named("ReviewersDB")
-    lateinit var reviewersDB: StorageLibrary
+    private lateinit var reviewersDB: StorageLibrary
 
+    @Inject
     @Named("BooksDB")
-    lateinit var booksDB: StorageLibrary
+    private lateinit var booksDB: StorageLibrary
 
     override fun gaveReview(reviewerId: String, bookId: String): Boolean
     {
