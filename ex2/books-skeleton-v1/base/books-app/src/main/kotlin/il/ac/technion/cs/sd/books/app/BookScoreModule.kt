@@ -5,7 +5,6 @@ import com.google.inject.name.Names
 import dev.misfitlabs.kotlinguice4.KotlinModule
 import il.ac.technion.cs.sd.books.lib.*
 
-
 class BookScoreModule : KotlinModule() {
     override fun configure() {
         bind<BookScoreInitializer>().to<BookScoreInitializerImpl>()

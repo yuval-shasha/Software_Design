@@ -3,7 +3,7 @@ package il.ac.technion.cs.sd.books.external
 import java.lang.Thread.sleep
 import kotlin.system.measureTimeMillis
 
-class LineStorageMock : LineStorage
+class LineStorageImpl : LineStorage
 {
     var storedLines = ArrayList<String>()
 

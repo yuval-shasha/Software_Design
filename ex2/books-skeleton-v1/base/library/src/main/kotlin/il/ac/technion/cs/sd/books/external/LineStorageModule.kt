@@ -6,7 +6,7 @@ class LineStorageModule : KotlinModule()
 {
     override fun configure()
     {
-        bind<LineStorageFactory>().to<LineStorageFactoryMock>()
-        bind<LineStorage>().to<LineStorageMock>()
+        bind<LineStorageFactory>().to<LineStorageFactoryImpl>()
+        bind<LineStorage>().to<LineStorageImpl>()
     }
 }

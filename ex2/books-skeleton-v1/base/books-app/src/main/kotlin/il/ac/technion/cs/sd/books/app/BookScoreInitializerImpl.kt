@@ -43,6 +43,7 @@ class BookScoreInitializerImpl : BookScoreInitializer
                 Reviewer(reviewer.id, reviewer.reviews)
             }
 
+    // TODO: debug this func, need to understand why the booksList is empty
     // Creates a list of books mapped to pairs of reviewers and scores that each reviewer gave the book
     private fun createBooksList(reviewersList: List<Reviewer>) : List<KeyListOfValuesElement>
     {
@@ -64,8 +65,8 @@ class BookScoreInitializerImpl : BookScoreInitializer
 
     override fun setup(xmlData: String)
     {
-        val reviewersList = XMLParser.parseXMLFileToReviewsListByReviewer(xmlData)
-        reviewersList
+        var reviewersList = XMLParser.parseXMLFileToReviewsListByReviewer(xmlData)
+        reviewersList = reviewersList
             .asSequence()
             .mergeAllBooksReviewedByReviewer()
             .removeDuplicateBooksByReviewer()
@@ -73,10 +74,10 @@ class BookScoreInitializerImpl : BookScoreInitializer
 
         val booksList = createBooksList(reviewersList)
 
-        reviewersDB.createDatabase(xmlData)
+        reviewersDB.createDatabase("reviewersDB")
         reviewersDB.initializeDatabase(reviewersList)
 
-        booksDB.createDatabase(xmlData)
+        booksDB.createDatabase("booksDB")
         booksDB.initializeDatabase(booksList)
     }
 }

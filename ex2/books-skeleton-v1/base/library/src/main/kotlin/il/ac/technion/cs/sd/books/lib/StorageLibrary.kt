@@ -11,7 +11,7 @@ open class KeyValueElement(val subKey: String, val value: Int)
 
 open class KeyListOfValuesElement(val mainKey: String, val listOfSubKeys: List<KeyValueElement>)
 
-class StorageLibrary @Inject constructor()
+class StorageLibrary @Inject constructor(private val lineStorageFactory: LineStorageFactory)
 {
     private var lineStorage : LineStorage? = null
 
@@ -57,21 +57,19 @@ class StorageLibrary @Inject constructor()
                 KeyListOfValuesElement(mainKey.mainKey, sorted)
             }
 
-    // Merges, removes duplicates and sorts the sub-keys and the keys.
-    private fun processMainKeysList(mainKeysList: List<KeyListOfValuesElement>)
+    // Merges, removes duplicates and sorts the main keys.
+    private fun processMainKeysList(mainKeysList: List<KeyListOfValuesElement>) : List<KeyListOfValuesElement>
     {
-        mainKeysList.asSequence()
+        return mainKeysList
+            .asSequence()
             .sortedBy { it.mainKey }
             .sortSubKeysByTheirKeys()
             .toList()
     }
 
     // Creates the LineStorageInstance
-    @Inject
     fun createDatabase(fileName: String)
     {
-        val injector = Guice.createInjector(LineStorageModule())
-        val lineStorageFactory = injector.getInstance<LineStorageFactory>()
         lineStorage = lineStorageFactory.open(fileName)
     }
 
@@ -81,9 +79,9 @@ class StorageLibrary @Inject constructor()
     // <subKey1> <value1> <subKey2> <value2> ...
     fun initializeDatabase(mainKeysList: List<KeyListOfValuesElement>)
     {
-        processMainKeysList(mainKeysList)
+        val sortedMainKeysList = processMainKeysList(mainKeysList)
 
-        for (mainKey in mainKeysList)
+        for (mainKey in sortedMainKeysList)
         {
             lineStorage?.appendLine(mainKey.mainKey)
             lineStorage?.appendLine(mainKey.listOfSubKeys.joinToString(" ") { "${it.subKey} ${it.value}" })
@@ -109,7 +107,7 @@ class StorageLibrary @Inject constructor()
     fun getDatabaseAsArrayList(): ArrayList<String>
     {
         val dataList = ArrayList<String>()
-        val numberOfLines = lineStorage?.numberOfLines();
+        val numberOfLines = lineStorage?.numberOfLines()
         for (line in 0..<numberOfLines!!) {
             val dataInLine = lineStorage?.read(line)
             if (dataInLine != null) {

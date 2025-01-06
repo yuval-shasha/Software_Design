@@ -10,7 +10,7 @@ class XMLParserTest
     fun `XMLParser should create a list of 2 reviewers where every reviewer has only one reviewed book`()
     {
         val fileContents: String =
-            javaClass.getResource("one_review_per_reviewer.xml")?.readText() ?:
+            StorageLibrary::class.java.classLoader.getResource("one_review_per_reviewer.xml")?.readText() ?:
             throw FileNotFoundException("Could not open file")
 
         val reviewersList: List<Reviewer> = XMLParser.parseXMLFileToReviewsListByReviewer(fileContents)
@@ -26,7 +26,7 @@ class XMLParserTest
     fun `check correctness of data parsed by XMLParser where every reviewer has only one reviewed book`()
     {
         val fileContents: String =
-            javaClass.getResource("one_review_per_reviewer.xml")?.readText() ?:
+            StorageLibrary::class.java.classLoader.getResource("one_review_per_reviewer.xml")?.readText() ?:
             throw FileNotFoundException("Could not open file")
 
         val reviewersList: List<Reviewer> = XMLParser.parseXMLFileToReviewsListByReviewer(fileContents)
@@ -41,7 +41,7 @@ class XMLParserTest
     fun `XMLParser should create a list of 2 reviewers where every reviewer has multiple reviewed books`()
     {
         val fileContents: String =
-            javaClass.getResource("multiple_reviews_per_reviewer.xml")?.readText() ?:
+            StorageLibrary::class.java.classLoader.getResource("multiple_reviews_per_reviewer.xml")?.readText() ?:
             throw FileNotFoundException("Could not open file")
 
         val reviewersList: List<Reviewer> = XMLParser.parseXMLFileToReviewsListByReviewer(fileContents)
@@ -55,7 +55,7 @@ class XMLParserTest
     fun `check correctness of data parsed by XMLParser where every reviewer has multiple reviewed books`()
     {
         val fileContents: String =
-            javaClass.getResource("multiple_reviews_per_reviewer.xml")?.readText() ?:
+            StorageLibrary::class.java.classLoader.getResource("multiple_reviews_per_reviewer.xml")?.readText() ?:
             throw FileNotFoundException("Could not open file")
 
         val reviewersList: List<Reviewer> = XMLParser.parseXMLFileToReviewsListByReviewer(fileContents)
