@@ -5,7 +5,7 @@ import kotlin.system.measureTimeMillis
 
 class LineStorageImpl : LineStorage
 {
-    var storedLines = ArrayList<String>()
+    private var storedLines = ArrayList<String>()
 
     override fun appendLine(line: String): Unit
     {

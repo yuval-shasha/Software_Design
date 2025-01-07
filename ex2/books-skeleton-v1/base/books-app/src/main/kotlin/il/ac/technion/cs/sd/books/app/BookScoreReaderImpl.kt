@@ -1,18 +1,13 @@
 package il.ac.technion.cs.sd.books.app
 
 import com.google.inject.Inject
-import com.google.inject.name.Named
+import il.ac.technion.cs.sd.books.external.LineStorageFactory
 import il.ac.technion.cs.sd.books.lib.StorageLibrary
 
-class BookScoreReaderImpl : BookScoreReader
+class BookScoreReaderImpl @Inject constructor(lineStorageFactory: LineStorageFactory) : BookScoreReader
 {
-    @Inject
-    @Named("ReviewersDB")
-    private lateinit var reviewersDB: StorageLibrary
-
-    @Inject
-    @Named("BooksDB")
-    private lateinit var booksDB: StorageLibrary
+    private var reviewersDB = StorageLibrary(lineStorageFactory, "reviewers")
+    private var booksDB = StorageLibrary(lineStorageFactory, "books")
 
     override fun gaveReview(reviewerId: String, bookId: String): Boolean
     {

@@ -12,6 +12,7 @@ import dev.misfitlabs.kotlinguice4.getInstance
 import il.ac.technion.cs.sd.books.app.BookScoreReader
 import il.ac.technion.cs.sd.books.app.BookScoreInitializer
 import il.ac.technion.cs.sd.books.app.BookScoreModule
+import il.ac.technion.cs.sd.books.external.LineStorageFactory
 import il.ac.technion.cs.sd.books.external.LineStorageModule
 
 
@@ -24,6 +25,7 @@ class ExampleTest {
 
         val injector = Guice.createInjector(BookScoreModule(), LineStorageModule())
         injector.getInstance<BookScoreInitializer>().setup(fileContents)
+        val factory = injector.getInstance<LineStorageFactory>()
         return injector.getInstance<BookScoreReader>()
     }
 

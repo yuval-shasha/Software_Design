@@ -1,0 +1,32 @@
+<Root>
+    <Reviewer Id="1">
+        <Review>
+            <Id>Foobar</Id>
+            <Score>10</Score>
+        </Review>
+    </Reviewer>
+    <Reviewer Id="2">
+        <Review>
+            <Id>Moobar</Id>
+            <Score>5</Score>
+        </Review>
+    </Reviewer>
+    <Reviewer Id="1">
+        <Review>
+            <Id>Boobar</Id>
+            <Score>4</Score>
+        </Review>
+    </Reviewer>
+    <Reviewer Id="2">
+        <Review>
+            <Id>Loobar</Id>
+            <Score>7</Score>
+        </Review>
+    </Reviewer>
+    <Reviewer Id="1">
+        <Review>
+            <Id>Roobar</Id>
+            <Score>4</Score>
+        </Review>
+    </Reviewer>
+</Root>

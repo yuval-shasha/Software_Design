@@ -1,27 +1,22 @@
 package il.ac.technion.cs.sd.books.app
 
 import com.google.inject.Inject
-import com.google.inject.name.Named
+import il.ac.technion.cs.sd.books.external.LineStorageFactory
 import il.ac.technion.cs.sd.books.lib.*
 import java.util.*
 
-class BookScoreInitializerImpl : BookScoreInitializer
+class BookScoreInitializerImpl @Inject constructor(lineStorageFactory: LineStorageFactory) : BookScoreInitializer
 {
-    @Inject
-    @Named("ReviewersDB")
-    private lateinit var reviewersDB: StorageLibrary
-
-    @Inject
-    @Named("BooksDB")
-    private lateinit var booksDB: StorageLibrary
+    private var reviewersDB = StorageLibrary(lineStorageFactory, "reviewers")
+    private var booksDB = StorageLibrary(lineStorageFactory, "books")
 
     // Merges all the sub-keys of each key.
     private fun Sequence<Reviewer>.mergeAllBooksReviewedByReviewer() : Sequence<Reviewer> =
         this
             .groupBy { it.id }
             .asSequence()
-            .map { (id, booksWithSameReviewer) ->
-                val concatenatedBooks = booksWithSameReviewer
+            .map { (id, reviewerWithSameIdList) ->
+                val concatenatedBooks = reviewerWithSameIdList
                     .asSequence()
                     .flatMap { it.reviews.asSequence() }
                     .toList()
@@ -34,16 +29,16 @@ class BookScoreInitializerImpl : BookScoreInitializer
     private fun Sequence<Reviewer>.removeDuplicateBooksByReviewer() : Sequence<Reviewer> =
         this
             .map { reviewer ->
-                val uniqueBooksList = reviewer.reviews
-                    .asSequence()
+                val noDuplicateReviews = reviewer.reviews
                     .associateBy { it.name }
-                    .values
+                    .map { (id, bookWithScore) ->
+                        bookWithScore
+                    }
                     .toList()
 
-                Reviewer(reviewer.id, reviewer.reviews)
+                Reviewer(reviewer.id, noDuplicateReviews)
             }
 
-    // TODO: debug this func, need to understand why the booksList is empty
     // Creates a list of books mapped to pairs of reviewers and scores that each reviewer gave the book
     private fun createBooksList(reviewersList: List<Reviewer>) : List<KeyListOfValuesElement>
     {
@@ -52,8 +47,8 @@ class BookScoreInitializerImpl : BookScoreInitializer
             .forEach { reviewer ->
                 reviewer.reviews
                     .forEach { review ->
-                        booksMap[review.name]
-                            ?.add(KeyValueElement(reviewer.id, review.score))
+                        val list = booksMap.getOrPut(review.name) { mutableListOf() }
+                        list.add(KeyValueElement(reviewer.id, review.score))
                     }
             }
         val booksList = ArrayList<KeyListOfValuesElement>()
@@ -74,10 +69,15 @@ class BookScoreInitializerImpl : BookScoreInitializer
 
         val booksList = createBooksList(reviewersList)
 
-        reviewersDB.createDatabase("reviewersDB")
         reviewersDB.initializeDatabase(reviewersList)
-
-        booksDB.createDatabase("booksDB")
         booksDB.initializeDatabase(booksList)
+    }
+
+    fun getReviewersDB() : StorageLibrary {
+        return reviewersDB
+    }
+
+    fun getBooksDB() : StorageLibrary {
+        return booksDB
     }
 }

@@ -2,7 +2,6 @@ package il.ac.technion.cs.sd.books.lib
 
 import com.google.inject.Guice
 import dev.misfitlabs.kotlinguice4.getInstance
-import il.ac.technion.cs.sd.books.external.LineStorage
 import il.ac.technion.cs.sd.books.external.LineStorageFactory
 import il.ac.technion.cs.sd.books.external.LineStorageModule
 import org.junit.jupiter.api.*
@@ -11,13 +10,13 @@ import io.mockk.*
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class StorageLibraryTest {
     private val mainKeysList = ArrayList<KeyListOfValuesElement>()
-    private var mockLineStorageFactory = mockk<LineStorageFactory>(relaxed = true)
-    private var storageLibrary = StorageLibrary(mockLineStorageFactory)
+    private lateinit var storageLibrary: StorageLibrary
+    private lateinit var lineStorageFactory: LineStorageFactory
 
     @BeforeAll
     fun setup(): Unit {
-        val injector = Guice.createInjector(LineStorageModule())
-        every { mockLineStorageFactory.open("") } returns injector.getInstance<LineStorage>()
+        lineStorageFactory = Guice.createInjector(LineStorageModule()).getInstance<LineStorageFactory>()
+        storageLibrary = StorageLibrary(lineStorageFactory, "reviewers")
 
         val subKeysList1 = ArrayList<KeyValueElement>()
         subKeysList1.add(KeyValueElement("sub1", 31))
@@ -33,7 +32,6 @@ class StorageLibraryTest {
         subKeysList3.add(KeyValueElement("sub2" , 30))
         mainKeysList.add(KeyListOfValuesElement("101" , subKeysList3))
 
-        storageLibrary.createDatabase("")
         storageLibrary.initializeDatabase(mainKeysList)
     }
 
@@ -47,10 +45,6 @@ class StorageLibraryTest {
         Assertions.assertEquals("sub1 31", databaseAsArrayList[3])
         Assertions.assertEquals("abc3", databaseAsArrayList[4])
         Assertions.assertEquals("sub2 50 sub3 25", databaseAsArrayList[5])
-
-        verify (exactly = 1) {
-            mockLineStorageFactory.open("")
-        }
     }
 
     // test that getDataAsMapFromMainKey works as expected with valid mainKey
@@ -64,10 +58,6 @@ class StorageLibraryTest {
         Assertions.assertNotNull(subKeyToValueMap2)
         Assertions.assertEquals(25 , subKeyToValueMap2?.get("sub3"))
         Assertions.assertEquals(50 , subKeyToValueMap2?.get("sub2"))
-
-        verify (exactly = 1) {
-            mockLineStorageFactory.open("")
-        }
     }
 
     @Test
@@ -77,9 +67,14 @@ class StorageLibraryTest {
 
         Assertions.assertNull(nullData1)
         Assertions.assertNull(nullData2)
+    }
+
+    @Test
+    fun `verify that the open method is called only once`() {
+        storageLibrary.initializeDatabase(mainKeysList)
 
         verify (exactly = 1) {
-            mockLineStorageFactory.open("")
+            lineStorageFactory.open("reviewers")
         }
     }
 }

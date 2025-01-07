@@ -1,0 +1,26 @@
+<Root>
+    <Reviewer Id="2">
+        <Review>
+            <Id>Soobar</Id>
+            <Score>8</Score>
+        </Review>
+        <Review>
+            <Id>Foobar</Id>
+            <Score>5</Score>
+        </Review>
+        <Review>
+            <Id>Koobar</Id>
+            <Score>7</Score>
+        </Review>
+    </Reviewer>
+    <Reviewer Id="1">
+        <Review>
+            <Id>Foobar</Id>
+            <Score>10</Score>
+        </Review>
+        <Review>
+            <Id>Foobar</Id>
+            <Score>4</Score>
+        </Review>
+    </Reviewer>
+</Root>

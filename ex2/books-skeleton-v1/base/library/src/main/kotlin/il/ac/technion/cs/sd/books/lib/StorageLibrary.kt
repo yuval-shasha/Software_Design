@@ -1,33 +1,29 @@
 package il.ac.technion.cs.sd.books.lib
 
-import com.google.inject.Guice
 import com.google.inject.Inject
-import dev.misfitlabs.kotlinguice4.getInstance
 import il.ac.technion.cs.sd.books.external.LineStorage
 import il.ac.technion.cs.sd.books.external.LineStorageFactory
-import il.ac.technion.cs.sd.books.external.LineStorageModule
 
 open class KeyValueElement(val subKey: String, val value: Int)
 
 open class KeyListOfValuesElement(val mainKey: String, val listOfSubKeys: List<KeyValueElement>)
 
-class StorageLibrary @Inject constructor(private val lineStorageFactory: LineStorageFactory)
-{
-    private var lineStorage : LineStorage? = null
+class StorageLibrary @Inject constructor(private val lineStorageFactory: LineStorageFactory, fileName: String) {
+    private var lineStorage = lineStorageFactory.open(fileName)
 
     // Returns the index of the line in LineStorage that contains the provided key.
     // Returns null if the provided id is not found.
     private fun binarySearchOnEvenLines(key: String): Int?
     {
        var left = 0
-       var right = lineStorage?.numberOfLines()!! / 2 - 1
+       var right = lineStorage.numberOfLines() / 2 - 1
        while (left <= right) {
            val mid = (left + right) / 2
-           val currentKey = lineStorage?.read(mid * 2)
+           val currentKey = lineStorage.read(mid * 2)
            if (currentKey == key) {
                return mid * 2
            }
-          if (currentKey != null && currentKey < key) {
+          if (currentKey < key) {
             left = mid + 1
           } else {
             right = mid - 1
@@ -43,7 +39,7 @@ class StorageLibrary @Inject constructor(private val lineStorageFactory: LineSto
         val indexOfKey = binarySearchOnEvenLines(key)
         if (indexOfKey != null)
         {
-            return lineStorage?.read(indexOfKey + 1)
+            return lineStorage.read(indexOfKey + 1)
         }
         return null
     }
@@ -67,12 +63,6 @@ class StorageLibrary @Inject constructor(private val lineStorageFactory: LineSto
             .toList()
     }
 
-    // Creates the LineStorageInstance
-    fun createDatabase(fileName: String)
-    {
-        lineStorage = lineStorageFactory.open(fileName)
-    }
-
     // Populates LineStorage with the provided data.
     // Data is stored in the following format:
     // <mainKey>
@@ -83,8 +73,8 @@ class StorageLibrary @Inject constructor(private val lineStorageFactory: LineSto
 
         for (mainKey in sortedMainKeysList)
         {
-            lineStorage?.appendLine(mainKey.mainKey)
-            lineStorage?.appendLine(mainKey.listOfSubKeys.joinToString(" ") { "${it.subKey} ${it.value}" })
+            lineStorage.appendLine(mainKey.mainKey)
+            lineStorage.appendLine(mainKey.listOfSubKeys.joinToString(" ") { "${it.subKey} ${it.value}" })
         }
     }
 
@@ -107,12 +97,10 @@ class StorageLibrary @Inject constructor(private val lineStorageFactory: LineSto
     fun getDatabaseAsArrayList(): ArrayList<String>
     {
         val dataList = ArrayList<String>()
-        val numberOfLines = lineStorage?.numberOfLines()
-        for (line in 0..<numberOfLines!!) {
-            val dataInLine = lineStorage?.read(line)
-            if (dataInLine != null) {
-                dataList.addLast(dataInLine)
-            }
+        val numberOfLines = lineStorage.numberOfLines()
+        for (line in 0..<numberOfLines) {
+            val dataInLine = lineStorage.read(line)
+            dataList.addLast(dataInLine)
         }
         return dataList
     }
