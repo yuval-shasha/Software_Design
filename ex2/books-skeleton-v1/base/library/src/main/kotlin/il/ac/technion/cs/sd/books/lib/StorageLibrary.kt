@@ -84,6 +84,7 @@ class StorageLibrary @Inject constructor(private val lineStorageFactory: LineSto
     fun getDataAsMapFromMainKey(mainKey: String): Map<String, Int>?
     {
         val data = getMainKeyDataFromLineStorage(mainKey) ?: return null
+        if (data == "") return null
         return data
             .split(" ")
             .asSequence()
