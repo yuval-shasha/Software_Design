@@ -2,6 +2,11 @@ plugins {
     id("buildlogic.kotlin-library-conventions")
 }
 
+repositories {
+    mavenCentral()
+}
+
 dependencies {
-    implementation("il.ac.technion.cs.sd:buy-external:1.0")
+    implementation("com.gitlab.mvysny.konsume-xml:konsume-xml:1.2")
+    testImplementation(kotlin("test"))
 }
