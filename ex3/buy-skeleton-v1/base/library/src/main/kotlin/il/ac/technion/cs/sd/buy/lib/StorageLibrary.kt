@@ -4,7 +4,11 @@ import com.google.inject.Inject
 import il.ac.technion.cs.sd.buy.external.SuspendLineStorage
 import il.ac.technion.cs.sd.buy.external.SuspendLineStorageFactory
 
+open class KeyElement(val key: String)
+
 open class KeyValueElement(val subKey: String, val value: Int)
+
+open class KeyThreeValuesElement(val key: String, val value1: String, val value2: String, val value3: String)
 
 open class KeyListOfValuesElement(val mainKey: String, val listOfSubKeys: List<KeyValueElement>)
 
