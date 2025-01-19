@@ -2,40 +2,71 @@ package il.ac.technion.cs.sd.buy.lib
 
 import com.gitlab.mvysny.konsumexml.*
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
 
-@Serializable
-data class Product(val type: String, val id: String, val price: Int) : KeyValueElement(id, price)
-{
-    companion object
-    {
-        fun xml(konsumer: Konsumer): Product
-        {
-            konsumer.checkCurrent("Product")
-            val productId = konsumer.childText("id")
-            val productPrice = konsumer.childText("price").toInt()
-            return Product(productId, productPrice)
-        }
-    }
+interface Order {
+    val type: String
+    @SerialName("order-id") val id: String
+    @SerialName("user-id") val idUser: String?
+    @SerialName("product-id") val idProduct: String?
+    val amountProduct: Int?
 }
 
-Json.decodeFromString<Product>(some string)
+@Serializable
+data class Product(val type: String, val id: String, val price: Int) : KeyValueElement(type, id, price) {
 
-data
+}
 
-data class Reviewer(val id: String, val reviews: List<BookWithScore>) : KeyListOfValuesElement(id, reviews)
-{
-    companion object
-    {
-        fun xml(konsumer: Konsumer): Reviewer
-        {
-            konsumer.checkCurrent("Reviewer")
-            val reviewerId = konsumer.attributes["Id"]
-            val reviews = konsumer.children("Review")
-            {
-                BookWithScore.xml(this)
-            }
+@Serializable
+data class CreateOrder(@SerialName("type") val orderType: String, @SerialName("order-id") val orderId: String, @SerialName("user-id") val userId: String, @SerialName("product-id") val productId: String, val amount: Int) : KeyThreeValuesElement(orderType, orderId, userId, productId, amount), Order {
+    override val type: String
+        get() = orderType
+    override val id: String
+        get() = orderId
+    override val idUser: String
+        get() = userId
+    override val idProduct: String
+        get() = productId
+    override val amountProduct: Int
+        get() = amount
+    
+//    override fun json(jsonString: String): CreateOrder {
+//        // TODO: implement
+//    }
+}
 
-            return Reviewer(reviewerId, reviews)
-        }
-    }
+@Serializable
+data class ModifyOrder(val orderType: String, val orderId: String, val amount: Int) : KeyValueElement(orderType, orderId, amount), Order {
+    override val type: String
+        get() = orderType
+    override val id: String
+        get() = orderId
+    override val idUser: String?
+        get() = null
+    override val idProduct: String?
+        get() = null
+    override val amountProduct: Int
+        get() = amount
+
+//    override fun json(jsonString: String): ModifyOrder {
+//        // TODO: implement
+//    }
+}
+
+@Serializable
+data class CancelOrder(val orderType: String, val orderId: String) : KeyElement(orderType, orderId), Order {
+    override val type: String
+        get() = orderType
+    override val id: String
+        get() = orderId
+    override val idUser: String?
+        get() = null
+    override val idProduct: String?
+        get() = null
+    override val amountProduct: Int?
+        get() = null
+
+//    override fun json(jsonString: String): CancelOrder {
+//        // TODO: implement
+//    }
 }
