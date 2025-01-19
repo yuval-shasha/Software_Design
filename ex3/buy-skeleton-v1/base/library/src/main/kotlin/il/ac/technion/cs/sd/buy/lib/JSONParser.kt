@@ -1,11 +1,10 @@
 package il.ac.technion.cs.sd.buy.lib
 
 import kotlinx.serialization.json.*
-import il.ac.technion.cs.sd.buy.lib.Product
 
 class JSONParser {
     companion object {
-        fun parseJSONFileToProductList (jsonString : String) : List<Product>
+        fun parseJSONFileToProductsList (jsonString : String) : List<Product>
         {
             val json = Json {ignoreUnknownKeys  = true}
             val elements = json.decodeFromString<List<JsonElement>>(jsonString)

@@ -4,47 +4,64 @@ import com.gitlab.mvysny.konsumexml.*
 
 class XMLParser
 {
-    companion object
-    {
-        fun parseXMLFileToProductList(xmlString: String) : List<Product>
-        {
-            return xmlString.konsumeXml().use { konsumer ->
+    companion object {
+        fun parseXMLFileToProductList(xmlString: String): List<Product> {
+            val productsList = mutableListOf<Product>()
+
+            xmlString.konsumeXml().use { konsumer ->
                 konsumer.child("Root") {
-                    this.children("Product") {
-                        Product("product", konsumer.childText("id"), konsumer.childText("price").toInt())
+                    allChildrenAutoIgnore(Names.of("Product")) {
+                        productsList.add(
+                            Product(
+                                type = "product",
+                                id = childText("id"),
+                                price = childText("price").toInt()
+                            )
+                        )
                     }
                 }
             }
+
+            return productsList
         }
 
-        fun parseXMLFileToOrderList(xmlString: String) : List<Order>
-        {
-            return xmlString.konsumeXml().use { konsumer ->
+        fun parseXMLFileToOrderList(xmlString: String): List<Order> {
+            val ordersList = mutableListOf<Order>()
+
+            xmlString.konsumeXml().use { konsumer ->
                 konsumer.child("Root") {
-                    while (hasNext())
-                    {
-                        val newOrder = when (this.tagName) {
-                            "Order" -> CreateOrder(
-                                "order",
-                                konsumer.childText("order-id"),
-                                konsumer.childText("user-id"),
-                                konsumer.childText("product-id"),
-                                konsumer.childText("amount").toInt())
+                    allChildrenAutoIgnore(Names.of("Order", "ModifyOrder", "CancelOrder")) {
+                        when (localName) {
+                            "Order" -> ordersList.add(
+                                CreateOrder(
+                                    type = "order",
+                                    userId = childText("user-id"),
+                                    orderId = childText("order-id"),
+                                    productId = childText("product-id"),
+                                    amount = childText("amount").toInt()
+                                )
+                            )
 
-                            "ModifyOrder" -> ModifyOrder(
-                                "modify-order",
-                                konsumer.childText("order-id"),
-                                konsumer.childText("new-amount").toInt())
+                            "ModifyOrder" -> ordersList.add(
+                                ModifyOrder(
+                                    type = "modify-order",
+                                    orderId = childText("order-id"),
+                                    amount = childText("new-amount").toInt()
+                                )
+                            )
 
-                            "CancelOrder" -> CancelOrder(
-                                "cancel-order",
-                                konsumer.childText("order-id"))
-
-                            else -> null
+                            "CancelOrder" -> ordersList.add(
+                                CancelOrder(
+                                    type = "cancel-order",
+                                    orderId = childText("order-id")
+                                )
+                            )
                         }
                     }
                 }
             }
+
+            return ordersList
         }
     }
 }

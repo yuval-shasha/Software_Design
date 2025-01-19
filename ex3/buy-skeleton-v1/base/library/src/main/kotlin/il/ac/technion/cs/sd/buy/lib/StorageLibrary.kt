@@ -3,32 +3,35 @@ package il.ac.technion.cs.sd.buy.lib
 import com.google.inject.Inject
 import il.ac.technion.cs.sd.buy.external.SuspendLineStorage
 import il.ac.technion.cs.sd.buy.external.SuspendLineStorageFactory
+import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
+import kotlinx.coroutines.*
 
 @Serializable
-open class KeyElement(val keyType: String, val key: String)
+open class KeyThreeValuesElement(val keyType: String, val key: String, val value1: String?, val value2: String?, val value3: Int?)
 
-@Serializable
-open class KeyValueElement(val keyType: String, val key: String, val value: Int)
+class StorageLibrary @Inject constructor(private val suspendLineStorageFactory: SuspendLineStorageFactory, fileName: String) {
+    private lateinit var suspendLineStorage : SuspendLineStorage
 
-@Serializable
-open class KeyThreeValuesElement(val keyType: String, val key: String, val value1: String, val value2: String, val value3: Int)
-
-@Serializable
-open class KeyListOfValuesElement(val keyType: String, val mainKey: String, val listOfSubKeys: List<KeyValueElement>)
-
-class StorageLibrary @Inject constructor(private val lineStorageFactory: SuspendLineStorageFactory, fileName: String) {
-    private var lineStorage = lineStorageFactory.open(fileName)
+    init {
+        var job = CoroutineScope(Dispatchers.Default).launch {
+            suspendLineStorage = suspendLineStorageFactory.open(fileName)
+        }
+    }
 
     // Returns the index of the line in LineStorage that contains the provided key.
     // Returns null if the provided id is not found.
-    private fun binarySearchOnEvenLines(key: String): Int?
+    private suspend fun binarySearchOnEvenLines(key: String): Int?
     {
        var left = 0
-       var right = lineStorage.numberOfLines() / 2 - 1
+       var right = runBlocking {
+           launch {
+               suspendLineStorage.numberOfLines() / 2 - 1
+           }.join()
+       }
        while (left <= right) {
            val mid = (left + right) / 2
-           val currentKey = lineStorage.read(mid * 2)
+           val currentKey = suspendLineStorage.read(mid * 2)
            if (currentKey == key) {
                return mid * 2
            }
@@ -43,12 +46,12 @@ class StorageLibrary @Inject constructor(private val lineStorageFactory: Suspend
 
     // Returns the line in LineStorage that contains the provided key's data.
     // Returns null if the provided id is not found.
-    private fun getMainKeyDataFromLineStorage(key: String): String?
+    private suspend fun getMainKeyDataFromLineStorage(key: String): String?
     {
         val indexOfKey = binarySearchOnEvenLines(key)
         if (indexOfKey != null)
         {
-            return lineStorage.read(indexOfKey + 1)
+            return suspendLineStorage.read(indexOfKey + 1)
         }
         return null
     }
@@ -76,21 +79,21 @@ class StorageLibrary @Inject constructor(private val lineStorageFactory: Suspend
     // Data is stored in the following format:
     // <mainKey>
     // <subKey1> <value1> <subKey2> <value2> ...
-    fun initializeDatabase(mainKeysList: List<KeyListOfValuesElement>)
+    suspend fun initializeDatabase(mainKeysList: List<KeyListOfValuesElement>)
     {
         val sortedMainKeysList = processMainKeysList(mainKeysList)
 
         for (mainKey in sortedMainKeysList)
         {
-            lineStorage.appendLine(mainKey.mainKey)
-            lineStorage.appendLine(mainKey.listOfSubKeys.joinToString(" ") { "${it.subKey} ${it.value}" })
+            suspendLineStorage.appendLine(mainKey.mainKey)
+            suspendLineStorage.appendLine(mainKey.listOfSubKeys.joinToString(" ") { "${it.subKey} ${it.value}" })
         }
     }
 
     // Returns all the couples of sub-key and value associated with the provided key as a map.
     // Data is stored in the following format:
     // <mainKey1> <listOfSubKeys1> <mainKey2> <listOfSubKeys2> ...
-    fun getDataAsMapFromMainKey(mainKey: String): Map<String, Int>?
+    suspend fun getDataAsMapFromMainKey(mainKey: String): Map<String, Int>?
     {
         val data = getMainKeyDataFromLineStorage(mainKey) ?: return null
         if (data == "") return null
@@ -104,12 +107,12 @@ class StorageLibrary @Inject constructor(private val lineStorageFactory: Suspend
 
     // Returns the layout of the database.
     // For testing the initialization of the database.
-    fun getDatabaseAsArrayList(): ArrayList<String>
+    suspend fun getDatabaseAsArrayList(): ArrayList<String>
     {
         val dataList = ArrayList<String>()
-        val numberOfLines = lineStorage.numberOfLines()
+        val numberOfLines = suspendLineStorage.numberOfLines()
         for (line in 0..<numberOfLines) {
-            val dataInLine = lineStorage.read(line)
+            val dataInLine = suspendLineStorage.read(line)
             dataList.addLast(dataInLine)
         }
         return dataList

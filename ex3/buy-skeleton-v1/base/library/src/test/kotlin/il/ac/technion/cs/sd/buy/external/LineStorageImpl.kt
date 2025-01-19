@@ -1,34 +1,34 @@
 package il.ac.technion.cs.sd.buy.external
 
-import java.lang.Thread.sleep
+import kotlinx.coroutines.delay
 import kotlin.system.measureTimeMillis
 
-class LineStorageImpl : LineStorage
+class SuspendLineStorageImpl : SuspendLineStorage
 {
     private var storedLines = ArrayList<String>()
 
-    override fun appendLine(line: String): Unit
+    override suspend fun appendLine(line: String): Unit
     {
         storedLines.addLast(line)
     }
 
-    override fun read(lineNumber: Int): String
+    override suspend fun read(lineNumber: Int): String
     {
         var lineAtLineNumber = ""
         val time = measureTimeMillis {
             lineAtLineNumber = storedLines[lineNumber]
         }
-        sleep (lineAtLineNumber.length - time)
+        delay (lineAtLineNumber.length - time)
         return lineAtLineNumber
     }
 
-    override fun numberOfLines(): Int
+    override suspend fun numberOfLines(): Int
     {
         var numberOfLines = 0
         val time = measureTimeMillis {
             numberOfLines = storedLines.size
         }
-        sleep (100 - time)
+        delay (100 - time)
         return numberOfLines
     }
 }
