@@ -3,32 +3,28 @@ package il.ac.technion.cs.sd.buy.lib
 import com.google.inject.Inject
 import il.ac.technion.cs.sd.buy.external.SuspendLineStorage
 import il.ac.technion.cs.sd.buy.external.SuspendLineStorageFactory
-import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import kotlinx.coroutines.*
 
 @Serializable
-open class KeyThreeValuesElement(val keyType: String, val key: String, val value1: String?, val value2: String?, val value3: Int?)
+open class KeyWithTwoDataLists(val key: String, val dataList1: List<String>, val dataList2: List<String>)
 
 class StorageLibrary @Inject constructor(private val suspendLineStorageFactory: SuspendLineStorageFactory, fileName: String) {
-    private lateinit var suspendLineStorage : SuspendLineStorage
+    private var suspendLineStorage : SuspendLineStorage
 
     init {
-        var job = CoroutineScope(Dispatchers.Default).launch {
+        runBlocking {
             suspendLineStorage = suspendLineStorageFactory.open(fileName)
         }
     }
 
-    // Returns the index of the line in LineStorage that contains the provided key.
+    // Returns the index of the line in SuspendLineStorage that contains the provided key.
     // Returns null if the provided id is not found.
     private suspend fun binarySearchOnEvenLines(key: String): Int?
     {
        var left = 0
-       var right = runBlocking {
-           launch {
-               suspendLineStorage.numberOfLines() / 2 - 1
-           }.join()
-       }
+       var right = suspendLineStorage.numberOfLines() / 2 - 1
+
        while (left <= right) {
            val mid = (left + right) / 2
            val currentKey = suspendLineStorage.read(mid * 2)
@@ -44,9 +40,9 @@ class StorageLibrary @Inject constructor(private val suspendLineStorageFactory: 
        return null
    }
 
-    // Returns the line in LineStorage that contains the provided key's data.
+    // Returns the first line in SuspendLineStorage that contains the provided key's data.
     // Returns null if the provided id is not found.
-    private suspend fun getMainKeyDataFromLineStorage(key: String): String?
+    private suspend fun getFirstDataFromSuspendLineStorage(key: String): String?
     {
         val indexOfKey = binarySearchOnEvenLines(key)
         if (indexOfKey != null)
@@ -56,53 +52,46 @@ class StorageLibrary @Inject constructor(private val suspendLineStorageFactory: 
         return null
     }
 
-    // Sorts all the sub-keys of each key.
-    private fun Sequence<KeyListOfValuesElement>.sortSubKeysByTheirKeys() : Sequence<KeyListOfValuesElement> =
-        this
-            .map { mainKey ->
-                val sorted = mainKey.listOfSubKeys
-                    .sortedBy { it.subKey }
-                KeyListOfValuesElement(mainKey.mainKey, sorted)
-            }
-
-    // Merges, removes duplicates and sorts the main keys.
-    private fun processMainKeysList(mainKeysList: List<KeyListOfValuesElement>) : List<KeyListOfValuesElement>
+    // Returns the second line in SuspendLineStorage that contains the provided key's data.
+    // Returns null if the provided id is not found.
+    private suspend fun getSecondDataFromSuspendLineStorage(key: String): String?
     {
-        return mainKeysList
-            .asSequence()
-            .sortedBy { it.mainKey }
-            .sortSubKeysByTheirKeys()
-            .toList()
-    }
-
-    // Populates LineStorage with the provided data.
-    // Data is stored in the following format:
-    // <mainKey>
-    // <subKey1> <value1> <subKey2> <value2> ...
-    suspend fun initializeDatabase(mainKeysList: List<KeyListOfValuesElement>)
-    {
-        val sortedMainKeysList = processMainKeysList(mainKeysList)
-
-        for (mainKey in sortedMainKeysList)
+        val indexOfKey = binarySearchOnEvenLines(key)
+        if (indexOfKey != null)
         {
-            suspendLineStorage.appendLine(mainKey.mainKey)
-            suspendLineStorage.appendLine(mainKey.listOfSubKeys.joinToString(" ") { "${it.subKey} ${it.value}" })
+            return suspendLineStorage.read(indexOfKey + 2)
         }
+        return null
     }
 
-    // Returns all the couples of sub-key and value associated with the provided key as a map.
-    // Data is stored in the following format:
-    // <mainKey1> <listOfSubKeys1> <mainKey2> <listOfSubKeys2> ...
-    suspend fun getDataAsMapFromMainKey(mainKey: String): Map<String, Int>?
+    // Returns a string that contains all elements from the list separated by a space.
+    private fun convertDataListToString(dataList: List<String>) : String {
+        var dataString = ""
+        dataList.forEach { data ->
+            dataString.plus("$data ")
+        }
+        return dataString
+    }
+
+    // Writes the element's data to SuspendLineStorage, where the key is in the first line and each list of data is in a separate line.
+    private suspend fun addElementDataToSuspendLineStorage(element: KeyWithTwoDataLists) {
+        suspendLineStorage.appendLine(element.key)
+
+        var firstRow = convertDataListToString(element.dataList1)
+        suspendLineStorage.appendLine(firstRow)
+
+        var secondRow = convertDataListToString(element.dataList2)
+        suspendLineStorage.appendLine(secondRow)
+    }
+
+    // Populates SuspendLineStorage with the provided data, sorted by their keys.
+    suspend fun initializeDatabase(elementsList: List<KeyWithTwoDataLists>)
     {
-        val data = getMainKeyDataFromLineStorage(mainKey) ?: return null
-        if (data == "") return null
-        return data
-            .split(" ")
-            .asSequence()
-            .chunked(2)
-            .associate { it[0] to it[1].toInt() }
-            .toMap()
+        val processedElementsList = elementsList.sortedBy { it.key }
+
+        processedElementsList.forEach { element ->
+            addElementDataToSuspendLineStorage(element)
+        }
     }
 
     // Returns the layout of the database.
