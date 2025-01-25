@@ -1,19 +1,22 @@
-package il.ac.technion.cs.sd.buy.lib
+package il.ac.technion.cs.sd.buy.test
 
+import il.ac.technion.cs.sd.buy.app.XMLParser
+import il.ac.technion.cs.sd.buy.app.Order
+import il.ac.technion.cs.sd.buy.app.Product
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import java.io.FileNotFoundException
 
-class XMLParserTest
-{
+class XMLParserTest {
+    private val xmlParser = XMLParser()
+
     @Test
-    fun `XMLParser should create a list of 2 products`()
-    {
+    fun `XMLParser should create a list of 2 products`() {
         val fileContents: String =
-            StorageLibrary::class.java.classLoader.getResource("two_instances_of_each_element.xml")?.readText() ?:
+            javaClass.getResource("two_instances_of_each_element.xml")?.readText() ?:
             throw FileNotFoundException("Could not open file")
 
-        val productsList: List<Product> = XMLParser.parseXMLFileToProductList(fileContents)
+        val productsList: List<Product> = xmlParser.parseFileToProductsList(fileContents)
 
         Assertions.assertEquals(2, productsList.size)
 
@@ -27,13 +30,12 @@ class XMLParserTest
     }
 
     @Test
-    fun `XMLParser should create a list of 2 orders of each type`()
-    {
+    fun `XMLParser should create a list of 2 orders of each type`() {
         val fileContents: String =
-            StorageLibrary::class.java.classLoader.getResource("two_instances_of_each_element.xml")?.readText() ?:
+            javaClass.getResource("two_instances_of_each_element.xml")?.readText() ?:
             throw FileNotFoundException("Could not open file")
 
-        val ordersList: List<Order> = XMLParser.parseXMLFileToOrderList(fileContents)
+        val ordersList: List<Order> = xmlParser.parseFileToOrdersList(fileContents)
 
         Assertions.assertEquals(6, ordersList.size)
 

@@ -3,17 +3,14 @@ package il.ac.technion.cs.sd.buy.external
 import kotlinx.coroutines.delay
 import kotlin.system.measureTimeMillis
 
-class SuspendLineStorageImpl : SuspendLineStorage
-{
+class SuspendLineStorageImpl : SuspendLineStorage {
     private var storedLines = ArrayList<String>()
 
-    override suspend fun appendLine(line: String): Unit
-    {
+    override suspend fun appendLine(line: String): Unit {
         storedLines.addLast(line)
     }
 
-    override suspend fun read(lineNumber: Int): String
-    {
+    override suspend fun read(lineNumber: Int): String {
         var lineAtLineNumber = ""
         val time = measureTimeMillis {
             lineAtLineNumber = storedLines[lineNumber]
@@ -22,8 +19,7 @@ class SuspendLineStorageImpl : SuspendLineStorage
         return lineAtLineNumber
     }
 
-    override suspend fun numberOfLines(): Int
-    {
+    override suspend fun numberOfLines(): Int {
         var numberOfLines = 0
         val time = measureTimeMillis {
             numberOfLines = storedLines.size
