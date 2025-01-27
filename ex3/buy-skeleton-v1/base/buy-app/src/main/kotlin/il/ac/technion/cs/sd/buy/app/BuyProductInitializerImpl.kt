@@ -13,11 +13,9 @@ class BuyProductInitializerImpl @Inject constructor(suspendLineStorageFactory: S
     private fun getAllValidOrders(productsList : List<Product>, ordersList : List<Order>) : List<Order> {
         return ordersList
             .asSequence()
-            .filter { it.isOrderValid(ordersList, productsList) }
-            .groupBy { it.orderId }
-            .map { (_, actionsList) ->
-                actionsList.first()
-            }
+            .filter { it.isOrderValid(ordersList, productsList) && it.type == CREATE_ORDER_TYPE }
+            .associateBy { it.orderId }
+            .map { (_, order) -> order }
             .toList()
     }
 
@@ -45,13 +43,13 @@ class BuyProductInitializerImpl @Inject constructor(suspendLineStorageFactory: S
         ordersDB.initializeDatabase(ordersData)
     }
 
-    private fun getUserAsStorageLibraryElement(userId: String, ordersList: List<Order>, productsList: List<Product>) : KeyWithTwoDataLists {
-        val orderIdAndOrderModeList = ordersList
+    private fun getUserAsStorageLibraryElement(userId: String, originalOrdersList: List<Order>, validOrdersList: List<Order>, productsList: List<Product>) : KeyWithTwoDataLists {
+        val orderIdAndOrderModeList = validOrdersList
             .map { order ->
-                "${order.orderId} ${order.getOrderMode(ordersList)} " }
+                "${order.orderId} ${order.getOrderMode(originalOrdersList)} " }
             .toList()
 
-        val orderDetailsList = ordersList
+        val orderDetailsList = validOrdersList
             .map { order ->
                 val productPrice = order.getProductPrice(productsList).toString()
                 "${order.productId} ${order.amount} $productPrice " }
@@ -66,8 +64,8 @@ class BuyProductInitializerImpl @Inject constructor(suspendLineStorageFactory: S
         getAllValidOrders(productsList, ordersList)
             .asSequence()
             .groupBy { it.userId }
-            .forEach { (userId, orders) ->
-                val elementForUsersData = getUserAsStorageLibraryElement(userId, orders, productsList)
+            .forEach { (userId, validOrders) ->
+                val elementForUsersData = getUserAsStorageLibraryElement(userId, ordersList, validOrders, productsList)
                 usersData.add(elementForUsersData)
             }
 

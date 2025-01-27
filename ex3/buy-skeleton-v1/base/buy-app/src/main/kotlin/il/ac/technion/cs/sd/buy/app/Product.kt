@@ -7,6 +7,23 @@ import kotlin.collections.component2
 
 @Serializable
 class Product(val type: String, val id: String, val price: Int) {
+    private fun getOrdersOfProductWithAmountAsMap(ordersList: List<Order>) : Map<Order, Int> {
+        return ordersList
+            .asSequence()
+            .filter { it.productId == this.id }
+            .associateWith { order ->
+                if (order.isCancelled(ordersList)) -1 else order.amount
+            }
+    }
+
+    private fun getUserIdsOrderedProductWithAmountAsMap(ordersList: List<Order>) : Map<String, Int> {
+        return getOrdersOfProductWithAmountAsMap(ordersList)
+            .asSequence()
+            .filter { !it.key.isCancelled(ordersList) }
+            .map { (order, amount) -> order.userId to amount }
+            .toMap()
+    }
+
     fun getProductAsStorageLibraryElement(ordersList: List<Order>) : KeyWithTwoDataLists {
         val usersOrderedProductWithAmountList = getUserIdsOrderedProductWithAmountAsMap(ordersList)
             .map { (userId, amount) ->
@@ -14,20 +31,12 @@ class Product(val type: String, val id: String, val price: Int) {
             }
             .toList()
 
-        val ordersOfProductWithAmountList = getOrderIdsOfProductWithAmountAsMap(ordersList)
-            .map { (orderId, amount) ->
-                "$orderId $amount"
+        val ordersOfProductWithAmountList = getOrdersOfProductWithAmountAsMap(ordersList)
+            .map { (order, amount) ->
+                "${order.orderId} $amount"
             }
             .toList()
 
         return KeyWithTwoDataLists(id, usersOrderedProductWithAmountList, ordersOfProductWithAmountList)
-    }
-
-    private fun getOrderIdsOfProductWithAmountAsMap(ordersList: List<Order>) : Map<String, Int> {
-        TODO("Create a map of order ids that contain the product (including cancelled ones) + amount (-1 for cancelled orders")
-    }
-
-    private fun getUserIdsOrderedProductWithAmountAsMap(ordersList: List<Order>) : Map<String, Int> {
-        TODO("Create a map of user ids that ordered the product (not including cancelled orderes) + amount")
     }
 }

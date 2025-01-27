@@ -6,6 +6,7 @@ import kotlinx.serialization.Serializable
 
 const val CREATE_ORDER_TYPE = "order"
 const val MODIFY_ORDER_TYPE = "modify-order"
+const val CANCEL_ORDER_TYPE = "cancel-order"
 const val CANCEL_ORDER_AMOUNT = "-1"
 const val CANCELLED_ORDER_MODE = "C"
 const val CREATED_ORDER_MODE = "I"
@@ -25,16 +26,17 @@ open class Order(open val type: String,
         return lastCreatedOrder != null
     }
 
+    fun isCancelled(ordersList: List<Order>) : Boolean {
+        val lastOrderWithSameId = ordersList
+            .findLast { it.orderId == this.orderId }
+
+        return lastOrderWithSameId != null && lastOrderWithSameId.type == CANCEL_ORDER_TYPE
+    }
+
     fun isProductCreated(ordersList: List<Order>, productsList: List<Product>) : Boolean {
         setLastProduct(ordersList)
         val productInList = productsList.find { it.id == this.productId }
         return productInList != null
-    }
-
-    fun setLastUser(ordersList: List<Order>) {
-        val lastCreatedOrder = ordersList
-            .findLast { it.orderId == this.orderId && it.type == CREATE_ORDER_TYPE }
-        this.userId = lastCreatedOrder?.userId ?: ""
     }
 
     fun setLastProduct(ordersList: List<Order>) {
@@ -66,8 +68,6 @@ open class Order(open val type: String,
     }
 
     fun getOrderAsStorageLibraryElement(ordersList: List<Order>) : KeyWithTwoDataLists {
-        setLastUser(ordersList)
-        setLastProduct(ordersList)
         val userProductList = listOf(userId, productId)
         val numItemsInOrderHistoryList = getAmountHistory(ordersList)
         return KeyWithTwoDataLists(orderId, userProductList, numItemsInOrderHistoryList)

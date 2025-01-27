@@ -11,7 +11,7 @@ open class KeyWithTwoDataLists(val key: String, val dataList1: List<String?>, va
 class StorageLibrary @Inject constructor(private val suspendLineStorageFactory: SuspendLineStorageFactory, fileName: String) {
     private val coroutineScope = CoroutineScope(Dispatchers.Default)
     private var suspendLineStorage = runBlocking {
-        async { suspendLineStorageFactory.open(fileName) }.await()
+        suspendLineStorageFactory.open(fileName)
     }
 
     // Returns the index of the line in SuspendLineStorage that contains the provided key.
