@@ -87,7 +87,7 @@ class StorageLibrary @Inject constructor(private val suspendLineStorageFactory: 
 
     // Returns the layout of the database.
     // For testing the initialization of the database.
-    suspend fun getDatabaseAsArrayList(): List<String> {
+    suspend fun getDatabaseAsList(): List<String> {
         return coroutineScope {
             (0 until suspendLineStorage.numberOfLines()).map { index ->
                 async {

@@ -1,0 +1,31 @@
+<Root>
+    <Product>
+        <id>iphone</id>
+        <price>10</price>
+    </Product>
+    <Order>
+        <user-id>John</user-id>
+        <order-id>1</order-id>
+        <product-id>iphone</product-id>
+        <amount>5</amount>
+    </Order>
+    <Product>
+        <id>iphone</id>
+        <price>20</price>
+    </Product>
+    <ModifyOrder>
+        <order-id>1</order-id>
+        <new-amount>10</new-amount>
+    </ModifyOrder>
+    <Product>
+        <id>iphone</id>
+        <price>30</price>
+    </Product>
+    <CancelOrder>
+        <order-id>1</order-id>
+    </CancelOrder>
+    <Product>
+        <id>iphone</id>
+        <price>40</price>
+    </Product>
+</Root>

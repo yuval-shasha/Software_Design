@@ -1,0 +1,13 @@
+<Root>
+    <Product>
+        <id>iphone</id>
+        <price>1000</price>
+    </Product>
+    <ModifyOrder>
+        <order-id>2</order-id>
+        <new-amount>10</new-amount>
+    </ModifyOrder>
+    <CancelOrder>
+        <order-id>2</order-id>
+    </CancelOrder>
+</Root>

@@ -33,23 +33,14 @@ open class Order(open val type: String,
         return lastOrderWithSameId != null && lastOrderWithSameId.type == CANCEL_ORDER_TYPE
     }
 
-    fun isProductCreated(ordersList: List<Order>, productsList: List<Product>) : Boolean {
-        setLastProduct(ordersList)
-        val productInList = productsList.find { it.id == this.productId }
-        return productInList != null
-    }
-
-    fun setLastProduct(ordersList: List<Order>) {
-        val lastCreatedOrder = ordersList
-            .findLast { it.orderId == this.orderId && it.type == CREATE_ORDER_TYPE }
-        this.productId = lastCreatedOrder?.productId ?: ""
-    }
-
     fun getAmountHistory(ordersList: List<Order>) : List<String> {
         val amountHistoryList = mutableListOf<String>()
         val ordersWithSameId = ordersList.filter { it.orderId == this.orderId }
         val lastCreatedOrderIndex = ordersWithSameId.indexOf(ordersWithSameId.findLast { it.type == CREATE_ORDER_TYPE })
-        for (index in lastCreatedOrderIndex until ordersWithSameId.size) {
+
+        amountHistoryList.addLast(ordersWithSameId[lastCreatedOrderIndex].amount.toString())
+
+        for (index in lastCreatedOrderIndex + 1 until ordersWithSameId.size) {
             if (ordersWithSameId[index].type == MODIFY_ORDER_TYPE) {
                 if (amountHistoryList.last() == CANCEL_ORDER_AMOUNT) {
                     amountHistoryList.removeLast()
@@ -64,13 +55,14 @@ open class Order(open val type: String,
     }
 
     fun isOrderValid(ordersList: List<Order>, productsList: List<Product>) : Boolean {
-        return isCreated(ordersList) && isProductCreated(ordersList, productsList)
+        val product = productsList.find { it.id == productId }
+        return isCreated(ordersList) && (product != null)
     }
 
     fun getOrderAsStorageLibraryElement(ordersList: List<Order>) : KeyWithTwoDataLists {
         val userProductList = listOf(userId, productId)
-        val numItemsInOrderHistoryList = getAmountHistory(ordersList)
-        return KeyWithTwoDataLists(orderId, userProductList, numItemsInOrderHistoryList)
+        val orderHistoryList = getAmountHistory(ordersList)
+        return KeyWithTwoDataLists(orderId, userProductList, orderHistoryList)
     }
 
     fun getOrderMode(ordersList: List<Order>) : String {

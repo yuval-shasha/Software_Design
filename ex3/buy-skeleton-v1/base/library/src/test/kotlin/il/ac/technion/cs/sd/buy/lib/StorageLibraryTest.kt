@@ -6,6 +6,7 @@ import il.ac.technion.cs.sd.buy.external.LineStorageModule
 import org.junit.jupiter.api.*
 import dev.misfitlabs.kotlinguice4.getInstance
 import kotlinx.coroutines.*
+import kotlinx.coroutines.test.runTest
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class StorageLibraryTest {
@@ -52,24 +53,24 @@ class StorageLibraryTest {
     }
 
     @Test
-    fun `initializeDatabase should sort the main keys in ascending order`() = runBlocking {
-        val databaseAsArrayList = async { storageLibrary.getDatabaseAsArrayList() }.await()
+    fun `initializeDatabase should sort the main keys in ascending order`() = runTest {
+        val databaseAsList = async { storageLibrary.getDatabaseAsList() }.await()
 
-        Assertions.assertEquals("101", databaseAsArrayList[0])
-        Assertions.assertEquals("first woohoo! 123", databaseAsArrayList[1])
-        Assertions.assertEquals("second 1234567890 #$!", databaseAsArrayList[2])
+        Assertions.assertEquals("101", databaseAsList[0])
+        Assertions.assertEquals("first woohoo! 123", databaseAsList[1])
+        Assertions.assertEquals("second 1234567890 #$!", databaseAsList[2])
 
-        Assertions.assertEquals("@%", databaseAsArrayList[3])
-        Assertions.assertEquals("dwa0e", databaseAsArrayList[4])
-        Assertions.assertEquals("09bio 3nrqa )()()()", databaseAsArrayList[5])
+        Assertions.assertEquals("@%", databaseAsList[3])
+        Assertions.assertEquals("dwa0e", databaseAsList[4])
+        Assertions.assertEquals("09bio 3nrqa )()()()", databaseAsList[5])
 
-        Assertions.assertEquals("f8g", databaseAsArrayList[6])
-        Assertions.assertEquals("djvkf 294hno2", databaseAsArrayList[7])
-        Assertions.assertEquals("wepm 5ghown %&$*#(", databaseAsArrayList[8])
+        Assertions.assertEquals("f8g", databaseAsList[6])
+        Assertions.assertEquals("djvkf 294hno2", databaseAsList[7])
+        Assertions.assertEquals("wepm 5ghown %&$*#(", databaseAsList[8])
     }
 
     @Test
-    fun `getDataListsFromSuspendLineStorage should return the data lists of a valid key`() = runBlocking {
+    fun `getDataListsFromSuspendLineStorage should return the data lists of a valid key`() = runTest {
         val dataLists = storageLibrary.getDataListsFromSuspendLineStorage("f8g")
 
         Assertions.assertEquals("djvkf 294hno2", dataLists?.get(0))
@@ -77,7 +78,7 @@ class StorageLibraryTest {
     }
 
     @Test
-    fun `getDataListsFromSuspendLineStorage should return null for invalid key`() = runBlocking {
+    fun `getDataListsFromSuspendLineStorage should return null for invalid key`() = runTest {
         val dataLists = storageLibrary.getDataListsFromSuspendLineStorage("Hello")
 
         Assertions.assertNull(dataLists)

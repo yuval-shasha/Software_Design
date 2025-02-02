@@ -10,15 +10,6 @@ class BuyProductInitializerImpl @Inject constructor(suspendLineStorageFactory: S
     private var ordersDB = StorageLibrary(suspendLineStorageFactory, "orders")
     private var usersDB = StorageLibrary(suspendLineStorageFactory, "users")
 
-    private fun getAllValidOrders(productsList : List<Product>, ordersList : List<Order>) : List<Order> {
-        return ordersList
-            .asSequence()
-            .filter { it.isOrderValid(ordersList, productsList) && it.type == CREATE_ORDER_TYPE }
-            .associateBy { it.orderId }
-            .map { (_, order) -> order }
-            .toList()
-    }
-
     private fun createProductsDB(productsList : List<Product>, ordersList : List<Order>) {
         val productsData = mutableListOf<KeyWithTwoDataLists>()
 
@@ -29,6 +20,15 @@ class BuyProductInitializerImpl @Inject constructor(suspendLineStorageFactory: S
             }
 
         productsDB.initializeDatabase(productsData)
+    }
+
+    private fun getAllValidOrders(productsList : List<Product>, ordersList : List<Order>) : List<Order> {
+        return ordersList
+            .asSequence()
+            .filter { it.isOrderValid(ordersList, productsList) && it.type == CREATE_ORDER_TYPE }
+            .associateBy { it.orderId }
+            .map { (_, order) -> order }
+            .toList()
     }
 
     private fun createOrdersDB(productsList : List<Product>, ordersList : List<Order>) {
@@ -78,6 +78,21 @@ class BuyProductInitializerImpl @Inject constructor(suspendLineStorageFactory: S
         createProductsDB(productsList, ordersList)
         createOrdersDB(productsList, ordersList)
         createUsersDB(productsList, ordersList)
+    }
+
+    /** for testing */
+    fun getProductsDB() : StorageLibrary {
+        return productsDB
+    }
+
+    /** for testing */
+    fun getOrdersDB() : StorageLibrary {
+        return ordersDB
+    }
+
+    /** for testing */
+    fun getUsersDB() : StorageLibrary {
+        return usersDB
     }
 
     /** Saves the XML data persistently, so that it could be queried using BuyProductReader */
