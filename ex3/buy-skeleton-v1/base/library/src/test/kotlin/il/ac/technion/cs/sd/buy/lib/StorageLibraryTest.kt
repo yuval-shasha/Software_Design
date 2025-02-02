@@ -54,7 +54,7 @@ class StorageLibraryTest {
 
     @Test
     fun `initializeDatabase should sort the main keys in ascending order`() = runTest {
-        val databaseAsList = async { storageLibrary.getDatabaseAsList() }.await()
+        val databaseAsList = storageLibrary.getDatabaseAsList()
 
         Assertions.assertEquals("101", databaseAsList[0])
         Assertions.assertEquals("first woohoo! 123", databaseAsList[1])

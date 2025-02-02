@@ -26,9 +26,9 @@ class BuyProductInitializerImplTest {
 
         buyProductInitializerImpl.setupXml(fileContents)
 
-        val productsDB = async { buyProductInitializerImpl.getProductsDB().getDatabaseAsList() }.await()
-        val ordersDB = async { buyProductInitializerImpl.getOrdersDB().getDatabaseAsList() }.await()
-        val usersDB = async { buyProductInitializerImpl.getUsersDB().getDatabaseAsList() }.await()
+        val productsDB = buyProductInitializerImpl.getProductsDB().getDatabaseAsList()
+        val ordersDB = buyProductInitializerImpl.getOrdersDB().getDatabaseAsList()
+        val usersDB = buyProductInitializerImpl.getUsersDB().getDatabaseAsList()
 
         Assertions.assertEquals("iphone", productsDB[0])
         Assertions.assertEquals("1 10", productsDB[1])
