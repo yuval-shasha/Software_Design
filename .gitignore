@@ -46,3 +46,5 @@ ex3/buy-skeleton-v1/base/buildSrc/.gradle/
 ex3/buy-skeleton-v1/base/buildSrc/build/
 ex3/buy-skeleton-v1/base/library/build/
 ex3/buy-skeleton-v1/base/gradle/
+ex3/buy-skeleton-v1/base/buy-app/build/
+ex3/buy-skeleton-v1/base/buy-test/build/

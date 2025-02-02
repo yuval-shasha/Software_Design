@@ -1,6 +1,7 @@
 package il.ac.technion.cs.sd.buy.app
 
 import il.ac.technion.cs.sd.buy.lib.KeyWithTwoDataLists
+import kotlinx.serialization.Polymorphic
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -14,6 +15,7 @@ const val MODIFIED_ORDER_MODE = "M"
 const val MODIFIED_CANCELLED_ORDER_MODE = "MC"
 
 @Serializable
+@Polymorphic
 open class Order(open val type: String,
                  @SerialName("order-id") open val orderId: String,
                  @SerialName("user-id") open var userId: String,
@@ -86,18 +88,21 @@ open class Order(open val type: String,
     }
 }
 
+
 class CreateOrder(override val type: String,
-                  override val orderId: String,
-                  override var userId: String,
-                  override var productId: String,
-                  override var amount: Int)
+                  @SerialName("order-id") override val orderId: String,
+                  @SerialName("user-id") override var userId: String,
+                  @SerialName("product-id") override var productId: String,
+                  @SerialName("amount") override var amount: Int)
     : Order(type, orderId, userId, productId, amount)
 
+
 class ModifyOrder(override val type: String,
-                  override val orderId: String,
-                  override var amount: Int)
+                  @SerialName("order-id") override val orderId: String,
+                  @SerialName("amount") override var amount: Int)
     : Order(type, orderId, "", "", amount)
 
+
 class CancelOrder(override var type: String,
-                  override var orderId: String)
+                  @SerialName("order-id") override var orderId: String)
     : Order(type, orderId, "", "", 0)

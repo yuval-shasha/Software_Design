@@ -27,15 +27,22 @@ class JSONParser : Parser {
             val jsonObject = element.jsonObject
             when(jsonObject["type"]?.jsonPrimitive?.content) {
                 "order" -> {
-                    val order = json.decodeFromJsonElement<CreateOrder>(jsonObject)
+                    val order = CreateOrder(jsonObject["type"]!!.jsonPrimitive.content,
+                        jsonObject["order-id"]!!.jsonPrimitive.content,
+                        jsonObject["user-id"]!!.jsonPrimitive.content,
+                        jsonObject["product-id"]!!.jsonPrimitive.content,
+                        jsonObject["amount"]!!.jsonPrimitive.int)
                     orders.add(order)
                 }
-                "modifyOrder" -> {
-                    val order = json.decodeFromJsonElement<ModifyOrder>(jsonObject)
+                "modify-order" -> {
+                    val order = ModifyOrder(jsonObject["type"]!!.jsonPrimitive.content,
+                        jsonObject["order-id"]!!.jsonPrimitive.content,
+                        jsonObject["amount"]!!.jsonPrimitive.int)
                     orders.add(order)
                 }
-                "cancelOrder" -> {
-                    val order = json.decodeFromJsonElement<CancelOrder>(jsonObject)
+                "cancel-order" -> {
+                    val order = CancelOrder(jsonObject["type"]!!.jsonPrimitive.content,
+                        jsonObject["order-id"]!!.jsonPrimitive.content)
                     orders.add(order)
                 }
             }
