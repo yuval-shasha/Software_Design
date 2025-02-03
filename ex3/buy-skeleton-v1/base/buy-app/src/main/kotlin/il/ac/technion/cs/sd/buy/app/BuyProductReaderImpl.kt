@@ -1,19 +1,30 @@
 package il.ac.technion.cs.sd.buy.app
 
-class BuyProductReaderImpl : BuyProductReader {
+import com.google.inject.Inject
+import il.ac.technion.cs.sd.buy.external.SuspendLineStorageFactory
+import il.ac.technion.cs.sd.buy.lib.StorageLibrary
+
+class BuyProductReaderImpl @Inject constructor(suspendLineStorageFactory: SuspendLineStorageFactory) : BuyProductReader {
+    private var productsDB = StorageLibrary(suspendLineStorageFactory, "products")
+    private var ordersDB = StorageLibrary(suspendLineStorageFactory, "orders")
+    private var usersDB = StorageLibrary(suspendLineStorageFactory, "users")
+
+
     /** Returns true iff the given ID is that of a valid (possibly canceled) order. */
     override suspend fun isValidOrderId(orderId: String): Boolean {
-        TODO("binary search for order id")
+        return ordersDB.getDataListsFromSuspendLineStorage(orderId) != null
     }
 
     /** Returns true iff the given ID is that of a valid and canceled order. */
     override suspend fun isCanceledOrder(orderId: String): Boolean {
-        TODO("binary search for order id, read the 3rd line and check if contains -1")
+        val orderLists = ordersDB.getDataListsFromSuspendLineStorage(orderId) ?: return false
+        return (orderLists[0].contains("C") || orderLists[1].contains("MC"))
     }
 
     /** Returns true iff the given ID is that of a valid order that was modified */
     override suspend fun isModifiedOrder(orderId: String): Boolean {
-        TODO("binary search for order id, read the 3rd line and check if contains more than 1 natural number")
+        val orderLists = ordersDB.getDataListsFromSuspendLineStorage(orderId) ?: return false
+        return (orderLists[0].contains("M") || orderLists[1].contains("MC"))
     }
 
     /**
@@ -22,6 +33,8 @@ class BuyProductReaderImpl : BuyProductReader {
      * found, returns null.
      */
     override suspend fun getNumberOfProductOrdered(orderId: String): Int? {
+        val orderLists = ordersDB.getDataListsFromSuspendLineStorage(orderId) ?: return null
+        val amount = Integer.parseInt(orderLists[1].last())
         TODO("search for order id, read the 3rd line and return the last number")
     }
 

@@ -1,0 +1,6 @@
+[
+  {"type": "product", "id": "1", "price": 1000},
+  {"type": "order", "order-id": "1", "user-id": "1", "product-id": "1", "amount": 5},
+  {"type": "modify-order", "order-id": "1", "amount": 10},
+  {"type": "cancel-order", "order-id": "1"}
+]

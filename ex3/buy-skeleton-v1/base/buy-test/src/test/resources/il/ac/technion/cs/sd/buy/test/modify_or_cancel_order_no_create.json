@@ -1,0 +1,5 @@
+[
+  {"type": "product", "id": "iphone", "price": 1000},
+  {"type": "modify-order", "order-id": "2", "amount": 10},
+  {"type": "cancel-order", "order-id": "2"}
+]
