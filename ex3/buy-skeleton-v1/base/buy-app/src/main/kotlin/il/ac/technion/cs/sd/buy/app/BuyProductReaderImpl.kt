@@ -18,13 +18,13 @@ class BuyProductReaderImpl @Inject constructor(suspendLineStorageFactory: Suspen
     /** Returns true iff the given ID is that of a valid and canceled order. */
     override suspend fun isCanceledOrder(orderId: String): Boolean {
         val orderLists = ordersDB.getDataListsFromSuspendLineStorage(orderId) ?: return false
-        return (orderLists[0].contains("C") || orderLists[1].contains("MC"))
+        return orderLists[0].contains("C")
     }
 
     /** Returns true iff the given ID is that of a valid order that was modified */
     override suspend fun isModifiedOrder(orderId: String): Boolean {
         val orderLists = ordersDB.getDataListsFromSuspendLineStorage(orderId) ?: return false
-        return (orderLists[0].contains("M") || orderLists[1].contains("MC"))
+        return orderLists[0].contains("M")
     }
 
     /**
@@ -34,8 +34,9 @@ class BuyProductReaderImpl @Inject constructor(suspendLineStorageFactory: Suspen
      */
     override suspend fun getNumberOfProductOrdered(orderId: String): Int? {
         val orderLists = ordersDB.getDataListsFromSuspendLineStorage(orderId) ?: return null
-        val amount = Integer.parseInt(orderLists[1].last())
-        TODO("search for order id, read the 3rd line and return the last number")
+        val amount = orderLists[1].split(" ").last().toInt()
+        if (isCanceledOrder(orderId)) return -amount
+        return amount
     }
 
     /**
@@ -43,7 +44,9 @@ class BuyProductReaderImpl @Inject constructor(suspendLineStorageFactory: Suspen
      * appends -1 to the list. If the order ID is invalid, returns an empty list.
      */
     override suspend fun getHistoryOfOrder(orderId: String): List<Int> {
-        TODO("search for order id, read the 3rd line and return the list of numbers")
+        val orderLists = ordersDB.getDataListsFromSuspendLineStorage(orderId) ?: return emptyList()
+        val amounts = orderLists[1].split(" ").map { it.toInt() }
+        return amounts
     }
 
     /**
@@ -51,7 +54,8 @@ class BuyProductReaderImpl @Inject constructor(suspendLineStorageFactory: Suspen
      * If the user is not found, returns an empty list.
      */
     override suspend fun getOrderIdsForUser(userId: String): List<String> {
-        TODO("search for user id, read the 2nd line and return the list of order ids")
+        val orderList = usersDB.getDataListsFromSuspendLineStorage(userId) ?: return emptyList()
+        return orderList[0].split(" ")
     }
 
     /**

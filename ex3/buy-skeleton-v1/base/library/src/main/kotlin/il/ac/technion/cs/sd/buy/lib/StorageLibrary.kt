@@ -57,7 +57,6 @@ class StorageLibrary @Inject constructor(private val suspendLineStorageFactory: 
         suspendLineStorage.appendLine(secondRow)
     }
 
-    // TODO: this function return a list of chars! we need to divide the whole line by spaces and return a list of strings
     // Returns both lines of data of the provided key from SuspendLineStorage
     // Returns null if the provided key is not found
     suspend fun getDataListsFromSuspendLineStorage(key: String): List<String>? {
