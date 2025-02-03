@@ -30,8 +30,6 @@ class JSONParserTest {
         Assertions.assertEquals(productsList[1].price, 500)
     }
 
-    // TODO: do we need to check null or empty values?
-    // TODO: currently checking for empty values and passing the test, originally the test was checking for null values and failing
     @Test
     fun `JSONParser should create a list of 2 orders of each type`() {
         val fileContents: String =
@@ -52,8 +50,6 @@ class JSONParserTest {
         currentOrder = ordersList[1]
         Assertions.assertEquals(currentOrder.type, "modify-order")
         Assertions.assertEquals(currentOrder.orderId, "1")
-//        Assertions.assertNull(currentOrder.userId)
-//        Assertions.assertNull(currentOrder.productId)
         Assertions.assertEquals(currentOrder.userId, "")
         Assertions.assertEquals(currentOrder.productId, "")
         Assertions.assertEquals(currentOrder.amount, 10)
@@ -61,9 +57,6 @@ class JSONParserTest {
         currentOrder = ordersList[2]
         Assertions.assertEquals(currentOrder.type, "cancel-order")
         Assertions.assertEquals(currentOrder.orderId, "1")
-//        Assertions.assertNull(currentOrder.userId)
-//        Assertions.assertNull(currentOrder.productId)
-//        Assertions.assertNull(currentOrder.amount)
         Assertions.assertEquals(currentOrder.userId, "")
         Assertions.assertEquals(currentOrder.productId, "")
         Assertions.assertEquals(currentOrder.amount, 0)
@@ -71,9 +64,6 @@ class JSONParserTest {
         currentOrder = ordersList[3]
         Assertions.assertEquals(currentOrder.type, "cancel-order")
         Assertions.assertEquals(currentOrder.orderId, "2")
-//        Assertions.assertNull(currentOrder.userId)
-//        Assertions.assertNull(currentOrder.productId)
-//        Assertions.assertNull(currentOrder.amount)
         Assertions.assertEquals(currentOrder.userId, "")
         Assertions.assertEquals(currentOrder.productId, "")
         Assertions.assertEquals(currentOrder.amount, 0)
@@ -88,8 +78,6 @@ class JSONParserTest {
         currentOrder = ordersList[5]
         Assertions.assertEquals(currentOrder.type, "modify-order")
         Assertions.assertEquals(currentOrder.orderId, "2")
-//        Assertions.assertNull(currentOrder.userId)
-//        Assertions.assertNull(currentOrder.productId)
         Assertions.assertEquals(currentOrder.userId, "")
         Assertions.assertEquals(currentOrder.productId, "")
         Assertions.assertEquals(currentOrder.amount, 400)

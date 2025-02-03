@@ -2,10 +2,8 @@ package il.ac.technion.cs.sd.buy.test
 
 import com.google.inject.Guice
 import dev.misfitlabs.kotlinguice4.getInstance
-import il.ac.technion.cs.sd.buy.app.BuyProductInitializerImpl
-import il.ac.technion.cs.sd.buy.external.SuspendLineStorageFactory
-import il.ac.technion.cs.sd.buy.external.LineStorageModule
-import kotlinx.coroutines.async
+import il.ac.technion.cs.sd.buy.app.*
+import il.ac.technion.cs.sd.buy.external.*
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -31,8 +29,8 @@ class BuyProductInitializerImplTest {
         val usersDB = buyProductInitializerImpl.getUsersDB().getDatabaseAsList()
 
         Assertions.assertEquals("iphone", productsDB[0])
-        Assertions.assertEquals("1 10", productsDB[1])
-        Assertions.assertEquals("2 10 4 -1", productsDB[2])
+        Assertions.assertEquals("1000", productsDB[1])
+        Assertions.assertEquals("2 4", productsDB[2])
 
         Assertions.assertEquals("2", ordersDB[0])
         Assertions.assertEquals("1 iphone", ordersDB[1])
@@ -42,35 +40,35 @@ class BuyProductInitializerImplTest {
         Assertions.assertEquals("10 -1", ordersDB[5])
 
         Assertions.assertEquals("1", usersDB[6])
-        Assertions.assertEquals("2 M", usersDB[7])
-        Assertions.assertEquals("iphone 10 1000", usersDB[8])
+        Assertions.assertEquals("", usersDB[7])
+        Assertions.assertEquals("2", usersDB[8])
         Assertions.assertEquals("3", usersDB[9])
-        Assertions.assertEquals("4 C", usersDB[10])
-        Assertions.assertEquals("iphone 10 1000", usersDB[11])
+        Assertions.assertEquals("", usersDB[10])
+        Assertions.assertEquals("4", usersDB[11])
     }
 
     @Test
     fun `test where all different elements have the same id - should not change anything`() = runTest {
-        val fileContents = getFileContents("same_id.xml")
+        val fileContents = getFileContents("same_id.json")
         val buyProductInitializerImpl = BuyProductInitializerImpl(suspendLineStorageFactory)
 
-        buyProductInitializerImpl.setupXml(fileContents)
+        buyProductInitializerImpl.setupJson(fileContents)
 
         val productsDB = buyProductInitializerImpl.getProductsDB().getDatabaseAsList()
         val ordersDB = buyProductInitializerImpl.getOrdersDB().getDatabaseAsList()
         val usersDB = buyProductInitializerImpl.getUsersDB().getDatabaseAsList()
 
         Assertions.assertEquals("1", productsDB[0])
-        Assertions.assertEquals("", productsDB[1])
-        Assertions.assertEquals("1 -1", productsDB[2])
+        Assertions.assertEquals("1000", productsDB[1])
+        Assertions.assertEquals("1", productsDB[2])
 
         Assertions.assertEquals("1", ordersDB[0])
         Assertions.assertEquals("1 1", ordersDB[1])
         Assertions.assertEquals("5 10 -1", ordersDB[2])
 
         Assertions.assertEquals("1", usersDB[0])
-        Assertions.assertEquals("1 MC", usersDB[1])
-        Assertions.assertEquals("1 -1 1000", usersDB[2])
+        Assertions.assertEquals("", usersDB[1])
+        Assertions.assertEquals("1", usersDB[2])
     }
 
     @Test
@@ -85,40 +83,40 @@ class BuyProductInitializerImplTest {
         val usersDB = buyProductInitializerImpl.getUsersDB().getDatabaseAsList()
 
         Assertions.assertEquals("iphone", productsDB[0])
-        Assertions.assertEquals("", productsDB[1])
-        Assertions.assertEquals("1 -1", productsDB[2])
+        Assertions.assertEquals("40", productsDB[1])
+        Assertions.assertEquals("1", productsDB[2])
 
         Assertions.assertEquals("1", ordersDB[0])
         Assertions.assertEquals("John iphone", ordersDB[1])
         Assertions.assertEquals("5 10 -1", ordersDB[2])
 
         Assertions.assertEquals("John", usersDB[0])
-        Assertions.assertEquals("1 MC", usersDB[1])
-        Assertions.assertEquals("iphone -1 40", usersDB[2])
+        Assertions.assertEquals("", usersDB[1])
+        Assertions.assertEquals("1", usersDB[2])
     }
 
     @Test
     fun `test where a product is ordered before it is created - the order that contains this product should be valid`() = runTest {
-        val fileContents = getFileContents("order_product_before_create_product.xml")
+        val fileContents = getFileContents("order_product_before_create_product.json")
         val buyProductInitializerImpl = BuyProductInitializerImpl(suspendLineStorageFactory)
 
-        buyProductInitializerImpl.setupXml(fileContents)
+        buyProductInitializerImpl.setupJson(fileContents)
 
         val productsDB = buyProductInitializerImpl.getProductsDB().getDatabaseAsList()
         val ordersDB = buyProductInitializerImpl.getOrdersDB().getDatabaseAsList()
         val usersDB = buyProductInitializerImpl.getUsersDB().getDatabaseAsList()
 
         Assertions.assertEquals("iphone", productsDB[0])
-        Assertions.assertEquals("", productsDB[1])
-        Assertions.assertEquals("1 -1", productsDB[2])
+        Assertions.assertEquals("1000", productsDB[1])
+        Assertions.assertEquals("1", productsDB[2])
 
         Assertions.assertEquals("1", ordersDB[0])
         Assertions.assertEquals("John iphone", ordersDB[1])
         Assertions.assertEquals("5 10 -1", ordersDB[2])
 
         Assertions.assertEquals("John", usersDB[0])
-        Assertions.assertEquals("1 MC", usersDB[1])
-        Assertions.assertEquals("iphone -1 1000", usersDB[2])
+        Assertions.assertEquals("", usersDB[1])
+        Assertions.assertEquals("1", usersDB[2])
     }
 
     @Test
@@ -141,21 +139,21 @@ class BuyProductInitializerImplTest {
 
     @Test
     fun `test where the same order is created multiple times with different details - only the last order and the modifications or cancellations after it should count`() = runTest {
-        val fileContents = getFileContents("same_order_id.xml")
+        val fileContents = getFileContents("same_order_id.json")
         val buyProductInitializerImpl = BuyProductInitializerImpl(suspendLineStorageFactory)
 
-        buyProductInitializerImpl.setupXml(fileContents)
+        buyProductInitializerImpl.setupJson(fileContents)
 
         val productsDB = buyProductInitializerImpl.getProductsDB().getDatabaseAsList()
         val ordersDB = buyProductInitializerImpl.getOrdersDB().getDatabaseAsList()
         val usersDB = buyProductInitializerImpl.getUsersDB().getDatabaseAsList()
 
         Assertions.assertEquals("android", productsDB[0])
-        Assertions.assertEquals("John 50", productsDB[1])
-        Assertions.assertEquals("200 50", productsDB[2])
+        Assertions.assertEquals("500", productsDB[1])
+        Assertions.assertEquals("200", productsDB[2])
         Assertions.assertEquals("iphone", productsDB[3])
-        Assertions.assertEquals("Mimi 1", productsDB[4])
-        Assertions.assertEquals("100 1", productsDB[5])
+        Assertions.assertEquals("1000", productsDB[4])
+        Assertions.assertEquals("100", productsDB[5])
 
         Assertions.assertEquals("100", ordersDB[0])
         Assertions.assertEquals("Mimi iphone", ordersDB[1])
@@ -165,11 +163,11 @@ class BuyProductInitializerImplTest {
         Assertions.assertEquals("50", ordersDB[5])
 
         Assertions.assertEquals("John", usersDB[0])
-        Assertions.assertEquals("200 I", usersDB[1])
-        Assertions.assertEquals("android 50 500", usersDB[2])
+        Assertions.assertEquals("", usersDB[1])
+        Assertions.assertEquals("200", usersDB[2])
         Assertions.assertEquals("Mimi", usersDB[3])
-        Assertions.assertEquals("100 M", usersDB[4])
-        Assertions.assertEquals("iphone 1 1000", usersDB[5])
+        Assertions.assertEquals("", usersDB[4])
+        Assertions.assertEquals("100", usersDB[5])
     }
 
     @Test
@@ -184,31 +182,31 @@ class BuyProductInitializerImplTest {
         val usersDB = buyProductInitializerImpl.getUsersDB().getDatabaseAsList()
 
         Assertions.assertEquals("iphone", productsDB[0])
-        Assertions.assertEquals("1 5", productsDB[1])
-        Assertions.assertEquals("2 5", productsDB[2])
+        Assertions.assertEquals("1000", productsDB[1])
+        Assertions.assertEquals("2", productsDB[2])
 
         Assertions.assertEquals("2", ordersDB[0])
         Assertions.assertEquals("1 iphone", ordersDB[1])
         Assertions.assertEquals("5", ordersDB[2])
 
         Assertions.assertEquals("1", usersDB[0])
-        Assertions.assertEquals("2 I", usersDB[1])
-        Assertions.assertEquals("iphone 5 1000", usersDB[2])
+        Assertions.assertEquals("", usersDB[1])
+        Assertions.assertEquals("2", usersDB[2])
     }
 
     @Test
     fun `test where an order is never created, only modified or cancelled - the order should not be valid`() = runTest {
-        val fileContents = getFileContents("modify_or_cancel_order_no_create.xml")
+        val fileContents = getFileContents("modify_or_cancel_order_no_create.json")
         val buyProductInitializerImpl = BuyProductInitializerImpl(suspendLineStorageFactory)
 
-        buyProductInitializerImpl.setupXml(fileContents)
+        buyProductInitializerImpl.setupJson(fileContents)
 
         val productsDB = buyProductInitializerImpl.getProductsDB().getDatabaseAsList()
         val ordersDB = buyProductInitializerImpl.getOrdersDB().getDatabaseAsList()
         val usersDB = buyProductInitializerImpl.getUsersDB().getDatabaseAsList()
 
         Assertions.assertEquals("iphone", productsDB[0])
-        Assertions.assertEquals("", productsDB[1])
+        Assertions.assertEquals("1000", productsDB[1])
         Assertions.assertEquals("", productsDB[2])
 
         Assertions.assertEquals(0, ordersDB.size)
@@ -228,39 +226,39 @@ class BuyProductInitializerImplTest {
         val usersDB = buyProductInitializerImpl.getUsersDB().getDatabaseAsList()
 
         Assertions.assertEquals("iphone", productsDB[0])
-        Assertions.assertEquals("1 10", productsDB[1])
-        Assertions.assertEquals("2 10", productsDB[2])
+        Assertions.assertEquals("1000", productsDB[1])
+        Assertions.assertEquals("2", productsDB[2])
 
         Assertions.assertEquals("2", ordersDB[0])
         Assertions.assertEquals("1 iphone", ordersDB[1])
         Assertions.assertEquals("5 10", ordersDB[2])
 
         Assertions.assertEquals("1", usersDB[0])
-        Assertions.assertEquals("2 M", usersDB[1])
-        Assertions.assertEquals("iphone 10 1000", usersDB[2])
+        Assertions.assertEquals("", usersDB[1])
+        Assertions.assertEquals("2", usersDB[2])
     }
 
     @Test
     fun `test where an order is cancelled multiple times - should appear as just one cancellation`() = runTest {
-        val fileContents = getFileContents("multiple_cancellations.xml")
+        val fileContents = getFileContents("multiple_cancellations.json")
         val buyProductInitializerImpl = BuyProductInitializerImpl(suspendLineStorageFactory)
 
-        buyProductInitializerImpl.setupXml(fileContents)
+        buyProductInitializerImpl.setupJson(fileContents)
 
         val productsDB = buyProductInitializerImpl.getProductsDB().getDatabaseAsList()
         val ordersDB = buyProductInitializerImpl.getOrdersDB().getDatabaseAsList()
         val usersDB = buyProductInitializerImpl.getUsersDB().getDatabaseAsList()
 
         Assertions.assertEquals("iphone", productsDB[0])
-        Assertions.assertEquals("", productsDB[1])
-        Assertions.assertEquals("2 -1", productsDB[2])
+        Assertions.assertEquals("1000", productsDB[1])
+        Assertions.assertEquals("2", productsDB[2])
 
         Assertions.assertEquals("2", ordersDB[0])
         Assertions.assertEquals("1 iphone", ordersDB[1])
         Assertions.assertEquals("5 10 -1", ordersDB[2])
 
         Assertions.assertEquals("1", usersDB[0])
-        Assertions.assertEquals("2 MC", usersDB[1])
-        Assertions.assertEquals("iphone -1 1000", usersDB[2])
+        Assertions.assertEquals("", usersDB[1])
+        Assertions.assertEquals("2", usersDB[2])
     }
 }

@@ -45,7 +45,9 @@ class XMLParser : Parser {
                         "ModifyOrder" -> ordersList.add(
                             ModifyOrder(
                                 type = "modify-order",
+                                userId = "",
                                 orderId = childText("order-id"),
+                                productId = "",
                                 amount = childText("new-amount").toInt()
                             )
                         )
@@ -53,7 +55,10 @@ class XMLParser : Parser {
                         "CancelOrder" -> ordersList.add(
                             CancelOrder(
                                 type = "cancel-order",
-                                orderId = childText("order-id")
+                                userId = "",
+                                orderId = childText("order-id"),
+                                productId = "",
+                                amount = 0
                             )
                         )
                     }

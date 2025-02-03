@@ -6,11 +6,28 @@ import il.ac.technion.cs.sd.buy.lib.KeyWithTwoDataLists
 import il.ac.technion.cs.sd.buy.lib.StorageLibrary
 
 class BuyProductInitializerImpl @Inject constructor(suspendLineStorageFactory: SuspendLineStorageFactory) : BuyProductInitializer {
+    /**
+     * first line: product id
+     * second line: product price
+     * third line: list of order ids containing the product
+     */
     private var productsDB = StorageLibrary(suspendLineStorageFactory, "products")
+
+    /**
+     * first line: order id
+     * second line: id of user who made the order and id of product in order
+     * third line: list of amount history
+     */
     private var ordersDB = StorageLibrary(suspendLineStorageFactory, "orders")
+
+    /**
+     * first line: user id
+     * second line: empty
+     * third line: sorted list of ids of orders that the user made
+     */
     private var usersDB = StorageLibrary(suspendLineStorageFactory, "users")
 
-    private fun createProductsDB(productsList : List<Product>, ordersList : List<Order>) {
+    private suspend fun createProductsDB(productsList : List<Product>, ordersList : List<Order>) {
         val productsData = mutableListOf<KeyWithTwoDataLists>()
 
         productsList
@@ -31,7 +48,7 @@ class BuyProductInitializerImpl @Inject constructor(suspendLineStorageFactory: S
             .toList()
     }
 
-    private fun createOrdersDB(productsList : List<Product>, ordersList : List<Order>) {
+    private suspend fun createOrdersDB(productsList : List<Product>, ordersList : List<Order>) {
         val ordersData = mutableListOf<KeyWithTwoDataLists>()
 
         getAllValidOrders(productsList, ordersList)
@@ -43,36 +60,30 @@ class BuyProductInitializerImpl @Inject constructor(suspendLineStorageFactory: S
         ordersDB.initializeDatabase(ordersData)
     }
 
-    private fun getUserAsStorageLibraryElement(userId: String, originalOrdersList: List<Order>, validOrdersList: List<Order>, productsList: List<Product>) : KeyWithTwoDataLists {
-        val orderIdAndOrderModeList = validOrdersList
-            .map { order ->
-                "${order.orderId} ${order.getOrderMode(originalOrdersList)} " }
+    private fun getUserAsStorageLibraryElement(userId: String, validOrdersByUserList: List<Order>) : KeyWithTwoDataLists {
+        val orderIdsByUserList = validOrdersByUserList
+            .map { order -> order.orderId }
             .toList()
 
-        val orderDetailsList = validOrdersList
-            .map { order ->
-                val productPrice = order.getProductPrice(productsList).toString()
-                "${order.productId} ${order.amount} $productPrice " }
-            .toList()
-
-        return KeyWithTwoDataLists(userId, orderIdAndOrderModeList, orderDetailsList)
+        return KeyWithTwoDataLists(userId, "", orderIdsByUserList)
     }
 
-    private fun createUsersDB(productsList : List<Product>, ordersList : List<Order>) {
+    private suspend fun createUsersDB(productsList : List<Product>, ordersList : List<Order>) {
         val usersData = mutableListOf<KeyWithTwoDataLists>()
 
         getAllValidOrders(productsList, ordersList)
             .asSequence()
             .groupBy { it.userId }
-            .forEach { (userId, validOrders) ->
-                val elementForUsersData = getUserAsStorageLibraryElement(userId, ordersList, validOrders, productsList)
+            .forEach { (userId, validOrdersByUserList) ->
+                val validOrdersByUserSortedList = validOrdersByUserList.sortedBy { order -> order.orderId }
+                val elementForUsersData = getUserAsStorageLibraryElement(userId, validOrdersByUserSortedList)
                 usersData.add(elementForUsersData)
             }
 
         usersDB.initializeDatabase(usersData)
     }
 
-    private fun setup(data: String, parser: Parser) {
+    private suspend fun setup(data: String, parser: Parser) {
         val productsList = parser.parseFileToProductsList(data)
         val ordersList = parser.parseFileToOrdersList(data)
         createProductsDB(productsList, ordersList)

@@ -7,10 +7,6 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import java.io.FileNotFoundException
 
-
-// TODO: understand what to do when we don't have a value, null or empty string?
-// TODO: original code returns empty string, but the test is checking for null, that's why it fails
-
 class XMLParserTest {
     private val xmlParser = XMLParser()
 
@@ -53,23 +49,23 @@ class XMLParserTest {
         currentOrder = ordersList[1]
         Assertions.assertEquals(currentOrder.type, "modify-order")
         Assertions.assertEquals(currentOrder.orderId, "1")
-        Assertions.assertNull(currentOrder.userId)
-        Assertions.assertNull(currentOrder.productId)
+        Assertions.assertEquals(currentOrder.userId, "")
+        Assertions.assertEquals(currentOrder.productId, "")
         Assertions.assertEquals(currentOrder.amount, 10)
 
         currentOrder = ordersList[2]
         Assertions.assertEquals(currentOrder.type, "cancel-order")
         Assertions.assertEquals(currentOrder.orderId, "1")
-        Assertions.assertNull(currentOrder.userId)
-        Assertions.assertNull(currentOrder.productId)
-        Assertions.assertNull(currentOrder.amount)
+        Assertions.assertEquals(currentOrder.userId, "")
+        Assertions.assertEquals(currentOrder.productId, "")
+        Assertions.assertEquals(currentOrder.amount, 0)
 
         currentOrder = ordersList[3]
         Assertions.assertEquals(currentOrder.type, "cancel-order")
         Assertions.assertEquals(currentOrder.orderId, "2")
-        Assertions.assertNull(currentOrder.userId)
-        Assertions.assertNull(currentOrder.productId)
-        Assertions.assertNull(currentOrder.amount)
+        Assertions.assertEquals(currentOrder.userId, "")
+        Assertions.assertEquals(currentOrder.productId, "")
+        Assertions.assertEquals(currentOrder.amount, 0)
 
         currentOrder = ordersList[4]
         Assertions.assertEquals(currentOrder.type, "order")
@@ -81,8 +77,8 @@ class XMLParserTest {
         currentOrder = ordersList[5]
         Assertions.assertEquals(currentOrder.type, "modify-order")
         Assertions.assertEquals(currentOrder.orderId, "2")
-        Assertions.assertNull(currentOrder.userId)
-        Assertions.assertNull(currentOrder.productId)
+        Assertions.assertEquals(currentOrder.userId, "")
+        Assertions.assertEquals(currentOrder.productId, "")
         Assertions.assertEquals(currentOrder.amount, 400)
     }
 }

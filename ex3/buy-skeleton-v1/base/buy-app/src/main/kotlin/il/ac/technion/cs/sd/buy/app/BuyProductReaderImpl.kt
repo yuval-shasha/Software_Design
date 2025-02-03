@@ -12,19 +12,19 @@ class BuyProductReaderImpl @Inject constructor(suspendLineStorageFactory: Suspen
 
     /** Returns true iff the given ID is that of a valid (possibly canceled) order. */
     override suspend fun isValidOrderId(orderId: String): Boolean {
-        return ordersDB.getDataListsFromSuspendLineStorage(orderId) != null
+        return ordersDB.getDataFromSuspendLineStorage(orderId) != null
     }
 
     /** Returns true iff the given ID is that of a valid and canceled order. */
     override suspend fun isCanceledOrder(orderId: String): Boolean {
-        val orderLists = ordersDB.getDataListsFromSuspendLineStorage(orderId) ?: return false
-        return orderLists[0].contains("C")
+        val orderLists = ordersDB.getDataFromSuspendLineStorage(orderId) ?: return false
+        return orderLists[1].contains(CANCEL_ORDER_AMOUNT)
     }
 
     /** Returns true iff the given ID is that of a valid order that was modified */
     override suspend fun isModifiedOrder(orderId: String): Boolean {
-        val orderLists = ordersDB.getDataListsFromSuspendLineStorage(orderId) ?: return false
-        return orderLists[0].contains("M")
+        val orderLists = ordersDB.getDataFromSuspendLineStorage(orderId) ?: return false
+        return orderLists[1].length > 1
     }
 
     /**
@@ -33,10 +33,16 @@ class BuyProductReaderImpl @Inject constructor(suspendLineStorageFactory: Suspen
      * found, returns null.
      */
     override suspend fun getNumberOfProductOrdered(orderId: String): Int? {
-        val orderLists = ordersDB.getDataListsFromSuspendLineStorage(orderId) ?: return null
-        val amount = orderLists[1].split(" ").last().toInt()
-        if (isCanceledOrder(orderId)) return -amount
-        return amount
+        val orderLists = ordersDB.getDataFromSuspendLineStorage(orderId) ?: return null
+        val amountHistory = orderLists[1].split(" ")
+        val indexOfLastAmount = amountHistory.size - 1
+        val amount = amountHistory[indexOfLastAmount].toInt()
+        if (amount < 0) {
+            return -(amountHistory[indexOfLastAmount - 1].toInt())
+        }
+        else {
+            return amount
+        }
     }
 
     /**
@@ -44,7 +50,7 @@ class BuyProductReaderImpl @Inject constructor(suspendLineStorageFactory: Suspen
      * appends -1 to the list. If the order ID is invalid, returns an empty list.
      */
     override suspend fun getHistoryOfOrder(orderId: String): List<Int> {
-        val orderLists = ordersDB.getDataListsFromSuspendLineStorage(orderId) ?: return emptyList()
+        val orderLists = ordersDB.getDataFromSuspendLineStorage(orderId) ?: return emptyList()
         val amounts = orderLists[1].split(" ").map { it.toInt() }
         return amounts
     }
@@ -54,8 +60,8 @@ class BuyProductReaderImpl @Inject constructor(suspendLineStorageFactory: Suspen
      * If the user is not found, returns an empty list.
      */
     override suspend fun getOrderIdsForUser(userId: String): List<String> {
-        val orderList = usersDB.getDataListsFromSuspendLineStorage(userId) ?: return emptyList()
-        return orderList[0].split(" ")
+        val userLists = usersDB.getDataFromSuspendLineStorage(userId) ?: return emptyList()
+        return userLists[1].split(" ")
     }
 
     /**
@@ -63,7 +69,24 @@ class BuyProductReaderImpl @Inject constructor(suspendLineStorageFactory: Suspen
      * If the user is not found, returns 0. Canceled orders are not included in this sum.
      */
     override suspend fun getTotalAmountSpentByUser(userId: String): Long {
-        TODO("search for user id, read the 3rd line and return the sum of the products")
+        val userList = usersDB.getDataFromSuspendLineStorage(userId) ?: return 0
+        var sum : Long = 0
+        userList[1].split(" ")
+            .filter { !isCanceledOrder(it) }
+            .forEach { orderId ->
+                val orderDetails = ordersDB.getDataFromSuspendLineStorage(orderId)?.get(0)
+                val productId = orderDetails?.split(" ")[1]
+                var numberOfProducts = getNumberOfProductOrdered(orderId)?.toLong()
+                if (numberOfProducts != null && numberOfProducts < 0) {
+                    numberOfProducts = 0
+                }
+                val price = productsDB.getDataFromSuspendLineStorage(productId.toString())?.get(0)?.toLong()
+
+                if (numberOfProducts != null && price != null) {
+                    sum += (numberOfProducts * price)
+                }
+            }
+        return sum
     }
 
     /**
@@ -71,7 +94,13 @@ class BuyProductReaderImpl @Inject constructor(suspendLineStorageFactory: Suspen
      * Users who only made a purchase that was later canceled do not appear in this list.
      */
     override suspend fun getUsersThatPurchased(productId: String): List<String> {
-        TODO("search for product id, read the 2nd line and return the list of user ids")
+        val productOrdersIds = productsDB.getDataFromSuspendLineStorage(productId)?.get(1)?.split(" ") ?: return emptyList()
+        val notCanceledOrderIds = productOrdersIds.filter { !isCanceledOrder(it) }
+        return notCanceledOrderIds
+            .map { orderId ->
+                ordersDB.getDataFromSuspendLineStorage(orderId)?.get(0)?.split(" ")?.get(0) ?: ""
+            }
+            .toList()
     }
 
     /**
@@ -79,7 +108,8 @@ class BuyProductReaderImpl @Inject constructor(suspendLineStorageFactory: Suspen
      * If the product is not found, returns an empty list.
      */
     override suspend fun getOrderIdsThatPurchased(productId: String): List<String> {
-        TODO("search for product id, read the 3rd line and return the list of order ids")
+        val productOrderIds = productsDB.getDataFromSuspendLineStorage(productId)?.get(1)?.split(" ") ?: return emptyList()
+        return productOrderIds
     }
 
     /**
@@ -87,7 +117,17 @@ class BuyProductReaderImpl @Inject constructor(suspendLineStorageFactory: Suspen
      * sum. If the product ID is not found, returns null.
      */
     override suspend fun getTotalNumberOfItemsPurchased(productId: String): Long? {
-        TODO("search for product id, read the 3rd line and return the sum of the numbers")
+        val productOrderIds = productsDB.getDataFromSuspendLineStorage(productId)?.get(1)?.split(" ") ?: return null
+        var count : Long = 0
+        productOrderIds.forEach { orderId ->
+            val amountOrdered = getNumberOfProductOrdered(orderId)?.toInt()
+            if (amountOrdered != null) {
+                if (amountOrdered >= 0) {
+                    count += amountOrdered
+                }
+            }
+        }
+        return count
     }
 
     /**
@@ -95,7 +135,13 @@ class BuyProductReaderImpl @Inject constructor(suspendLineStorageFactory: Suspen
      * average. If the product ID is not found, or it is found only in canceled orders, returns null.
      */
     override suspend fun getAverageNumberOfItemsPurchased(productId: String): Double? {
-        TODO("search for product id, read the 3rd line and return the average of the numbers")
+        val productOrderIds = productsDB.getDataFromSuspendLineStorage(productId)?.get(1)?.split(" ") ?: return null
+        productOrderIds
+            .map { orderId ->
+                getHistoryOfOrder(orderId).last()
+            }
+            .filter { it != CANCEL_ORDER_AMOUNT.toInt() }
+            .average()
     }
 
     /**
@@ -103,7 +149,13 @@ class BuyProductReaderImpl @Inject constructor(suspendLineStorageFactory: Suspen
      * were canceled, returns 0.6. If the user ID is not found, returns null.
      */
     override suspend fun getCancelRatioForUser(userId: String): Double? {
-        TODO("search for user id, read the 2nd line of the user where there is a mark of C or MC")
+        val orderIdsOfUser = getOrderIdsForUser(userId)
+        if (orderIdsOfUser.isEmpty()) {
+            return null
+        }
+        val totalNumOrdersOfUser = orderIdsOfUser.size.toDouble()
+        val canceledOrdersNum = orderIdsOfUser.filter { !isCanceledOrder(it) }.size.toDouble()
+        return canceledOrdersNum / totalNumOrdersOfUser
     }
 
     /**
@@ -112,7 +164,13 @@ class BuyProductReaderImpl @Inject constructor(suspendLineStorageFactory: Suspen
      * returns null.
      */
     override suspend fun getModifyRatioForUser(userId: String): Double? {
-        TODO("search for user id, read the 2nd line of the user where there is a mark of M or MC")
+        val orderIdsOfUser = getOrderIdsForUser(userId)
+        if (orderIdsOfUser.isEmpty()) {
+            return null
+        }
+        val totalNumOrdersOfUser = orderIdsOfUser.size.toDouble()
+        val modifiedOrdersNum = orderIdsOfUser.filter { !isModifiedOrder(it) }.size.toDouble()
+        return modifiedOrdersNum / totalNumOrdersOfUser
     }
 
     /**
@@ -120,7 +178,12 @@ class BuyProductReaderImpl @Inject constructor(suspendLineStorageFactory: Suspen
      * orders are not included in this total. If the user ID is not found, returns an empty map.
      */
     override suspend fun getAllItemsPurchased(userId: String): Map<String, Long> {
-        TODO("search for user id, read the 3rd line of the user")
+        val orderIdsOfUser = getOrderIdsForUser(userId).filter { !isCanceledOrder(it) }
+
+        orderIdsOfUser.forEach { orderId ->
+            val productId = ordersDB.getDataFromSuspendLineStorage(orderId)?.get(0)?.split(" ")[1]
+
+        }
     }
 
     /**

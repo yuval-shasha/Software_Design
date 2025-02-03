@@ -37,12 +37,17 @@ class JSONParser : Parser {
                 "modify-order" -> {
                     val order = ModifyOrder(jsonObject["type"]!!.jsonPrimitive.content,
                         jsonObject["order-id"]!!.jsonPrimitive.content,
+                        "",
+                        "",
                         jsonObject["amount"]!!.jsonPrimitive.int)
                     orders.add(order)
                 }
                 "cancel-order" -> {
                     val order = CancelOrder(jsonObject["type"]!!.jsonPrimitive.content,
-                        jsonObject["order-id"]!!.jsonPrimitive.content)
+                        jsonObject["order-id"]!!.jsonPrimitive.content,
+                        "",
+                        "",
+                        0)
                     orders.add(order)
                 }
             }

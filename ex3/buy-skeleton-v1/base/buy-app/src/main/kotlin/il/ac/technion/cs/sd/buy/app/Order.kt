@@ -7,12 +7,7 @@ import kotlinx.serialization.Serializable
 
 const val CREATE_ORDER_TYPE = "order"
 const val MODIFY_ORDER_TYPE = "modify-order"
-const val CANCEL_ORDER_TYPE = "cancel-order"
 const val CANCEL_ORDER_AMOUNT = "-1"
-const val CANCELLED_ORDER_MODE = "C"
-const val CREATED_ORDER_MODE = "I"
-const val MODIFIED_ORDER_MODE = "M"
-const val MODIFIED_CANCELLED_ORDER_MODE = "MC"
 
 @Serializable
 @Polymorphic
@@ -26,13 +21,6 @@ open class Order(open val type: String,
         val lastCreatedOrder = ordersList
             .findLast { it.orderId == this.orderId && it.type == CREATE_ORDER_TYPE }
         return lastCreatedOrder != null
-    }
-
-    fun isCancelled(ordersList: List<Order>) : Boolean {
-        val lastOrderWithSameId = ordersList
-            .findLast { it.orderId == this.orderId }
-
-        return lastOrderWithSameId != null && lastOrderWithSameId.type == CANCEL_ORDER_TYPE
     }
 
     fun getAmountHistory(ordersList: List<Order>) : List<String> {
@@ -62,29 +50,9 @@ open class Order(open val type: String,
     }
 
     fun getOrderAsStorageLibraryElement(ordersList: List<Order>) : KeyWithTwoDataLists {
-        val userProductList = listOf(userId, productId)
+        val orderData = "$userId $productId"
         val orderHistoryList = getAmountHistory(ordersList)
-        return KeyWithTwoDataLists(orderId, userProductList, orderHistoryList)
-    }
-
-    fun getOrderMode(ordersList: List<Order>) : String {
-        val amountHistoryList = getAmountHistory(ordersList)
-        if (amountHistoryList.last() == CANCEL_ORDER_AMOUNT && amountHistoryList.size == 2) {
-            return CANCELLED_ORDER_MODE
-        }
-        else if (amountHistoryList.last() == CANCEL_ORDER_AMOUNT && amountHistoryList.size > 2) {
-            return MODIFIED_CANCELLED_ORDER_MODE
-        }
-        else if (amountHistoryList.last() != CANCEL_ORDER_AMOUNT && amountHistoryList.size == 1) {
-            return CREATED_ORDER_MODE
-        }
-        else {
-            return MODIFIED_ORDER_MODE
-        }
-    }
-
-    fun getProductPrice(productsList: List<Product>) : Int? {
-        return productsList.find { it.id == this.productId }?.price
+        return KeyWithTwoDataLists(orderId, orderData, orderHistoryList)
     }
 }
 
@@ -99,10 +67,15 @@ class CreateOrder(override val type: String,
 
 class ModifyOrder(override val type: String,
                   @SerialName("order-id") override val orderId: String,
+                  @SerialName("user-id") override var userId: String,
+                  @SerialName("product-id") override var productId: String,
                   @SerialName("amount") override var amount: Int)
     : Order(type, orderId, "", "", amount)
 
 
 class CancelOrder(override var type: String,
-                  @SerialName("order-id") override var orderId: String)
+                  @SerialName("order-id") override val orderId: String,
+                  @SerialName("user-id") override var userId: String,
+                  @SerialName("product-id") override var productId: String,
+                  @SerialName("amount") override var amount: Int)
     : Order(type, orderId, "", "", 0)
