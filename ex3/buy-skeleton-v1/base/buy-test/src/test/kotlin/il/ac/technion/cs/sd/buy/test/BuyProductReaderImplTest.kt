@@ -44,7 +44,7 @@ class BuyProductReaderImplTest {
 
     @Test
     fun `isValidOrderId should return true for a valid canceled order` () = runTest(timeout = 6.seconds) {
-        val injector = setupAndGetInjector("no_edge_cases.xml")
+        val injector = setupAndGetInjector("no_edge_cases.json")
         val buyProductReader = injector.getInstance<BuyProductReader>()
 
         launch(Dispatchers.Default) {
@@ -64,7 +64,7 @@ class BuyProductReaderImplTest {
 
     @Test
     fun `isValidOrderId should return false for an order that does not exist` () = runTest(timeout = 6.seconds) {
-        val injector = setupAndGetInjector("no_edge_cases.xml")
+        val injector = setupAndGetInjector("no_edge_cases.json")
         val buyProductReader = injector.getInstance<BuyProductReader>()
 
         launch(Dispatchers.Default) {
@@ -84,7 +84,7 @@ class BuyProductReaderImplTest {
 
     @Test
     fun `isCanceledOrder should return false for a valid and not canceled order` () = runTest(timeout = 6.seconds) {
-        val injector = setupAndGetInjector("no_edge_cases.xml")
+        val injector = setupAndGetInjector("no_edge_cases.json")
         val buyProductReader = injector.getInstance<BuyProductReader>()
 
         launch(Dispatchers.Default) {
@@ -104,7 +104,7 @@ class BuyProductReaderImplTest {
 
     @Test
     fun `isCanceledOrder should return false for an order that does not exist` () = runTest(timeout = 6.seconds) {
-        val injector = setupAndGetInjector("no_edge_cases.xml")
+        val injector = setupAndGetInjector("no_edge_cases.json")
         val buyProductReader = injector.getInstance<BuyProductReader>()
 
         launch(Dispatchers.Default) {
@@ -124,7 +124,7 @@ class BuyProductReaderImplTest {
 
     @Test
     fun `isModifiedOrder should return true for a valid, modified and canceled order` () = runTest(timeout = 6.seconds) {
-        val injector = setupAndGetInjector("two_instances_of_each_element.xml")
+        val injector = setupAndGetInjector("two_instances_of_each_element.json")
         val buyProductReader = injector.getInstance<BuyProductReader>()
 
         launch(Dispatchers.Default) {
@@ -144,7 +144,7 @@ class BuyProductReaderImplTest {
 
     @Test
     fun `isModifiedOrder should return false for a valid and only canceled order` () = runTest(timeout = 6.seconds) {
-        val injector = setupAndGetInjector("no_edge_cases.xml")
+        val injector = setupAndGetInjector("no_edge_cases.json")
         val buyProductReader = injector.getInstance<BuyProductReader>()
 
         launch(Dispatchers.Default) {
@@ -164,7 +164,7 @@ class BuyProductReaderImplTest {
 
     @Test
     fun `isModifiedOrder should return false for an order that does not exist` () = runTest(timeout = 6.seconds) {
-        val injector = setupAndGetInjector("no_edge_cases.xml")
+        val injector = setupAndGetInjector("no_edge_cases.json")
         val buyProductReader = injector.getInstance<BuyProductReader>()
 
         launch(Dispatchers.Default) {
@@ -184,7 +184,7 @@ class BuyProductReaderImplTest {
 
     @Test
     fun `getNumberOfProductOrdered should return the last number of products that were ordered in an order that was only modified` () = runTest(timeout = 6.seconds) {
-        val injector = setupAndGetInjector("no_edge_cases.xml")
+        val injector = setupAndGetInjector("no_edge_cases.json")
         val buyProductReader = injector.getInstance<BuyProductReader>()
 
         launch(Dispatchers.Default) {
@@ -204,7 +204,7 @@ class BuyProductReaderImplTest {
 
     @Test
     fun `getNumberOfProductOrdered should return null for an order that does not exist` () = runTest(timeout = 6.seconds) {
-        val injector = setupAndGetInjector("no_edge_cases.xml")
+        val injector = setupAndGetInjector("no_edge_cases.json")
         val buyProductReader = injector.getInstance<BuyProductReader>()
 
         launch(Dispatchers.Default) {
@@ -224,7 +224,7 @@ class BuyProductReaderImplTest {
 
     @Test
     fun `getHistoryOfOrder should return a list of the history of amounts ordered for an only modified order from first to last` () = runTest(timeout = 6.seconds) {
-        val injector = setupAndGetInjector("multiple_modifications.xml")
+        val injector = setupAndGetInjector("multiple_modifications.json")
         val buyProductReader = injector.getInstance<BuyProductReader>()
 
         launch(Dispatchers.Default) {
@@ -252,7 +252,7 @@ class BuyProductReaderImplTest {
 
     @Test
     fun `getHistoryOfOrder should return a list of the history of amounts ordered for a canceled order from first to last where last is -1` () = runTest(timeout = 6.seconds) {
-        val injector = setupAndGetInjector("cancel_after_multiple_modifications.xml")
+        val injector = setupAndGetInjector("cancel_after_multiple_modifications.json")
         val buyProductReader = injector.getInstance<BuyProductReader>()
 
         launch(Dispatchers.Default) {
@@ -279,7 +279,7 @@ class BuyProductReaderImplTest {
 
     @Test
     fun `getHistoryOfOrder should return an empty list for an order that does not exist` () = runTest(timeout = 6.seconds) {
-        val injector = setupAndGetInjector("no_edge_cases.xml")
+        val injector = setupAndGetInjector("no_edge_cases.json")
         val buyProductReader = injector.getInstance<BuyProductReader>()
 
         launch(Dispatchers.Default) {
@@ -305,7 +305,7 @@ class BuyProductReaderImplTest {
 
     @Test
     fun `getOrderIdsForUser should return an empty list for an invalid user` () = runTest(timeout = 6.seconds) {
-        val injector = setupAndGetInjector("no_edge_cases.xml")
+        val injector = setupAndGetInjector("no_edge_cases.json")
         val buyProductReader = injector.getInstance<BuyProductReader>()
 
         launch(Dispatchers.Default) {
@@ -326,7 +326,7 @@ class BuyProductReaderImplTest {
 
     @Test
     fun `getTotalAmountSpentByUser should return 0 for a valid user that has only canceled orders` () = runTest(timeout = 6.seconds) {
-        val injector = setupAndGetInjector("no_edge_cases.xml")
+        val injector = setupAndGetInjector("no_edge_cases.json")
         val buyProductReader = injector.getInstance<BuyProductReader>()
 
         launch(Dispatchers.Default) {
@@ -346,7 +346,7 @@ class BuyProductReaderImplTest {
 
     @Test
     fun `getUsersThatPurchased should return a list of user IDs that purchased a valid product, not including canceled orders` () = runTest(timeout = 6.seconds) {
-        val injector = setupAndGetInjector("no_edge_cases.xml")
+        val injector = setupAndGetInjector("no_edge_cases.json")
         val buyProductReader = injector.getInstance<BuyProductReader>()
 
         launch(Dispatchers.Default) {
@@ -369,7 +369,7 @@ class BuyProductReaderImplTest {
 
     @Test
     fun `getUsersThatPurchased should return an empty list for an invalid product` () = runTest(timeout = 6.seconds) {
-        val injector = setupAndGetInjector("no_edge_cases.xml")
+        val injector = setupAndGetInjector("no_edge_cases.json")
         val buyProductReader = injector.getInstance<BuyProductReader>()
 
         launch(Dispatchers.Default) {
@@ -393,7 +393,7 @@ class BuyProductReaderImplTest {
 
     @Test
     fun `getOrderIdsThatPurchased should return an empty list for an invalid product` () = runTest(timeout = 6.seconds) {
-        val injector = setupAndGetInjector("no_edge_cases.xml")
+        val injector = setupAndGetInjector("no_edge_cases.json")
         val buyProductReader = injector.getInstance<BuyProductReader>()
 
         launch(Dispatchers.Default) {
@@ -414,7 +414,7 @@ class BuyProductReaderImplTest {
 
     @Test
     fun `getTotalNumberOfItemsPurchased should return 0 for a valid product with only canceled orders` () = runTest(timeout = 6.seconds) {
-        val injector = setupAndGetInjector("single_product_only_canceled_orders.xml")
+        val injector = setupAndGetInjector("single_product_only_canceled_orders.json")
         val buyProductReader = injector.getInstance<BuyProductReader>()
 
         launch(Dispatchers.Default) {
@@ -434,7 +434,7 @@ class BuyProductReaderImplTest {
 
     @Test
     fun `getAverageNumberOfItemsPurchased should return the average number of purchased items of a valid product, not including canceled orders` () = runTest(timeout = 6.seconds) {
-        val injector = setupAndGetInjector("single_product_multiple_orders.xml")
+        val injector = setupAndGetInjector("single_product_multiple_orders.json")
         val buyProductReader = injector.getInstance<BuyProductReader>()
 
         launch(Dispatchers.Default) {
@@ -454,7 +454,7 @@ class BuyProductReaderImplTest {
 
     @Test
     fun `getAverageNumberOfItemsPurchased should return null for an invalid product` () = runTest(timeout = 6.seconds) {
-        val injector = setupAndGetInjector("no_edge_cases.xml")
+        val injector = setupAndGetInjector("no_edge_cases.json")
         val buyProductReader = injector.getInstance<BuyProductReader>()
 
         launch(Dispatchers.Default) {
@@ -474,7 +474,7 @@ class BuyProductReaderImplTest {
 
     @Test
     fun `getCancelRatioForUser should return null for an invalid user` () = runTest(timeout = 6.seconds) {
-        val injector = setupAndGetInjector("no_edge_cases.xml")
+        val injector = setupAndGetInjector("no_edge_cases.json")
         val buyProductReader = injector.getInstance<BuyProductReader>()
 
         launch(Dispatchers.Default) {
@@ -494,7 +494,7 @@ class BuyProductReaderImplTest {
 
     @Test
     fun `getModifyRatioForUser should return null for an invalid user` () = runTest(timeout = 6.seconds) {
-        val injector = setupAndGetInjector("no_edge_cases.xml")
+        val injector = setupAndGetInjector("no_edge_cases.json")
         val buyProductReader = injector.getInstance<BuyProductReader>()
 
         launch(Dispatchers.Default) {
@@ -517,7 +517,7 @@ class BuyProductReaderImplTest {
 
     @Test
     fun `getAllItemsPurchased should return an empty map for an invalid user` () = runTest(timeout = 6.seconds) {
-        val injector = setupAndGetInjector("no_edge_cases.xml")
+        val injector = setupAndGetInjector("no_edge_cases.json")
         val buyProductReader = injector.getInstance<BuyProductReader>()
 
         launch(Dispatchers.Default) {
@@ -541,7 +541,7 @@ class BuyProductReaderImplTest {
 
     @Test
     fun `getItemsPurchasedByUsers should return an empty map for an invalid product` () = runTest(timeout = 6.seconds) {
-        val injector = setupAndGetInjector("no_edge_cases.xml")
+        val injector = setupAndGetInjector("no_edge_cases.json")
         val buyProductReader = injector.getInstance<BuyProductReader>()
 
         launch(Dispatchers.Default) {
@@ -549,4 +549,5 @@ class BuyProductReaderImplTest {
             assertEquals(0, resultMap.size)
         }
     }
+
 }

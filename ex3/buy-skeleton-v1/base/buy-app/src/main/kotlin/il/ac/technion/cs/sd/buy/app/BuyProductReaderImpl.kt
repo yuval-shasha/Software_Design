@@ -250,8 +250,7 @@ class BuyProductReaderImpl @Inject constructor(private val suspendLineStorageFac
                     val amountInOrder = getNumberOfProductOrdered(orderId)?.toLong()
 
                     if (amountInOrder != null && productIdInOrder != null && amountInOrder >= 0) {
-                        productToAmountMap[productIdInOrder] =
-                            productToAmountMap.merge(productIdInOrder, amountInOrder, Long::plus) as Long
+                        productToAmountMap.merge(productIdInOrder, amountInOrder, Long::plus)
                     }
                 }
             }
@@ -280,8 +279,7 @@ class BuyProductReaderImpl @Inject constructor(private val suspendLineStorageFac
                     val amountOrderedByUser = getAllItemsPurchased(userIdOfOrder)[productId]?.toLong()
 
                     if (amountOrderedByUser != null) {
-                        userToAmountMap[userIdOfOrder] =
-                            userToAmountMap.merge(userIdOfOrder, amountOrderedByUser, Long::plus) as Long
+                        userToAmountMap.merge(userIdOfOrder, amountOrderedByUser, Long::plus)
                     }
                 }
             }
