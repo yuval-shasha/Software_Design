@@ -5,12 +5,25 @@ import il.ac.technion.cs.sd.buy.external.SuspendLineStorage
 import il.ac.technion.cs.sd.buy.external.SuspendLineStorageFactory
 import kotlinx.serialization.Serializable
 import kotlinx.coroutines.*
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 @Serializable
-open class KeyWithTwoDataLists(val key: String, val mainData: String, val listData: List<String>)
+open class KeyWithTwoDataElements(val key: String, val mainData: String, val listData: List<String>)
 
 class StorageLibrary @Inject constructor(private val suspendLineStorageFactory: SuspendLineStorageFactory, private val fileName: String) {
     private lateinit var suspendLineStorage : SuspendLineStorage
+    private var isInitialized = false
+    private val mutex = Mutex()
+
+    private suspend fun initDB() {
+        mutex.withLock {
+            if (!isInitialized) {
+                isInitialized = true
+                suspendLineStorage = suspendLineStorageFactory.open(fileName)
+            }
+        }
+    }
 
     // Returns the index of the line in SuspendLineStorage that contains the provided key.
     // Returns null if the provided key is not found.
@@ -40,12 +53,14 @@ class StorageLibrary @Inject constructor(private val suspendLineStorageFactory: 
         dataList.forEach { data ->
             stringBuilder.append("$data ")
         }
-        stringBuilder.setLength(stringBuilder.length - 1)
+        if (stringBuilder.isNotEmpty()) {
+            stringBuilder.setLength(stringBuilder.length - 1)
+        }
         return stringBuilder.toString()
     }
 
     // Writes the element's data to SuspendLineStorage, where the key is in the first line and each list of data is in a separate line.
-    private suspend fun addElementDataToSuspendLineStorage(element: KeyWithTwoDataLists) {
+    private suspend fun addElementDataToSuspendLineStorage(element: KeyWithTwoDataElements) {
         suspendLineStorage.appendLine(element.key)
 
         var firstRow = element.mainData
@@ -55,24 +70,37 @@ class StorageLibrary @Inject constructor(private val suspendLineStorageFactory: 
         suspendLineStorage.appendLine(secondRow)
     }
 
-    // Returns both lines of data of the provided key from SuspendLineStorage
+    // Returns the main line of data of the provided key from SuspendLineStorage
     // Returns null if the provided key is not found
-    suspend fun getDataFromSuspendLineStorage(key: String): List<String>? = coroutineScope {
+    suspend fun getMainDataFromSuspendLineStorage(key: String): String? = coroutineScope {
+        initDB()
         val indexOfKey = binarySearchOnEveryThreeLines(key)
 
         if (indexOfKey != null) {
-            val firstData = async { suspendLineStorage.read(indexOfKey + 1) }
-            val secondData = async { suspendLineStorage.read(indexOfKey + 2) }
-            listOf(firstData.await(), secondData.await())
+            return@coroutineScope suspendLineStorage.read(indexOfKey + 1)
         }
         else {
-            null
+            return@coroutineScope null
+        }
+    }
+
+    // Returns the list line of data of the provided key from SuspendLineStorage
+    // Returns null if the provided key is not found
+    suspend fun getListDataFromSuspendLineStorage(key: String): String? = coroutineScope {
+        initDB()
+        val indexOfKey = binarySearchOnEveryThreeLines(key)
+
+        if (indexOfKey != null) {
+            return@coroutineScope suspendLineStorage.read(indexOfKey + 2)
+        }
+        else {
+            return@coroutineScope null
         }
     }
 
     // Populates SuspendLineStorage with the provided data, sorted by their keys.
-    suspend fun initializeDatabase(elementsList: List<KeyWithTwoDataLists>) {
-        suspendLineStorage = suspendLineStorageFactory.open(fileName)
+    suspend fun initializeDatabase(elementsList: List<KeyWithTwoDataElements>) {
+        initDB()
 
         val sortedElementsList = elementsList.sortedBy { it.key }
 
@@ -84,7 +112,10 @@ class StorageLibrary @Inject constructor(private val suspendLineStorageFactory: 
     // Returns the layout of the database.
     // For testing the initialization of the database.
     suspend fun getDatabaseAsList() : List<String> {
-        return (0 until suspendLineStorage.numberOfLines())
+        initDB()
+        val numberOfLines = suspendLineStorage.numberOfLines()
+
+        return (0 until numberOfLines)
             .map { index -> suspendLineStorage.read(index) }
             .toList()
     }

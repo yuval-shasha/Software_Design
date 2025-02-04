@@ -1,0 +1,12 @@
+[
+  {"type": "product", "id": "android", "price": 2000},
+  {"type": "order", "order-id": "iphoneOrder", "user-id": "1", "product-id": "iphone", "amount": 5},
+  {"type": "product", "id": "cool", "price": 1},
+  {"type": "order", "order-id": "androidOrder", "user-id": "1", "product-id": "android", "amount": 5},
+  {"type": "order", "order-id": "coolOrder", "user-id": "1", "product-id": "cool", "amount": 5},
+  {"type": "product", "id": "iphone", "price": 1},
+  {"type": "order", "order-id": "androidOrder2", "user-id": "1", "product-id": "iphone", "amount": 5},
+  {"type": "modify-order", "order-id": "iphoneOrder2", "amount": 400},
+  {"type": "order", "order-id": "cancelOrder", "user-id": "1", "product-id": "iphone", "amount": 30},
+  {"type": "cancel-order", "order-id": "cancelOrder"}
+]

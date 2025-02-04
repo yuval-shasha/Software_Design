@@ -24,9 +24,9 @@ class BuyProductInitializerImplTest {
 
         buyProductInitializerImpl.setupXml(fileContents)
 
-        val productsDB = buyProductInitializerImpl.getProductsDB().getDatabaseAsList()
-        val ordersDB = buyProductInitializerImpl.getOrdersDB().getDatabaseAsList()
-        val usersDB = buyProductInitializerImpl.getUsersDB().getDatabaseAsList()
+        val productsDB = buyProductInitializerImpl.getProductsStorageLibraryAsList()
+        val ordersDB = buyProductInitializerImpl.getOrdersStorageLibraryAsList()
+        val usersDB = buyProductInitializerImpl.getUsersStorageLibraryAsList()
 
         Assertions.assertEquals("iphone", productsDB[0])
         Assertions.assertEquals("1000", productsDB[1])
@@ -39,12 +39,12 @@ class BuyProductInitializerImplTest {
         Assertions.assertEquals("3 iphone", ordersDB[4])
         Assertions.assertEquals("10 -1", ordersDB[5])
 
-        Assertions.assertEquals("1", usersDB[6])
-        Assertions.assertEquals("", usersDB[7])
-        Assertions.assertEquals("2", usersDB[8])
-        Assertions.assertEquals("3", usersDB[9])
-        Assertions.assertEquals("", usersDB[10])
-        Assertions.assertEquals("4", usersDB[11])
+        Assertions.assertEquals("1", usersDB[0])
+        Assertions.assertEquals("", usersDB[1])
+        Assertions.assertEquals("2", usersDB[2])
+        Assertions.assertEquals("3", usersDB[3])
+        Assertions.assertEquals("", usersDB[4])
+        Assertions.assertEquals("4", usersDB[5])
     }
 
     @Test
@@ -54,9 +54,9 @@ class BuyProductInitializerImplTest {
 
         buyProductInitializerImpl.setupJson(fileContents)
 
-        val productsDB = buyProductInitializerImpl.getProductsDB().getDatabaseAsList()
-        val ordersDB = buyProductInitializerImpl.getOrdersDB().getDatabaseAsList()
-        val usersDB = buyProductInitializerImpl.getUsersDB().getDatabaseAsList()
+        val productsDB = buyProductInitializerImpl.getProductsStorageLibraryAsList()
+        val ordersDB = buyProductInitializerImpl.getOrdersStorageLibraryAsList()
+        val usersDB = buyProductInitializerImpl.getUsersStorageLibraryAsList()
 
         Assertions.assertEquals("1", productsDB[0])
         Assertions.assertEquals("1000", productsDB[1])
@@ -72,15 +72,15 @@ class BuyProductInitializerImplTest {
     }
 
     @Test
-    fun `test where the same product is created multiple times with different amounts - only the last price should count`() = runTest {
+    fun `test where the same product is created multiple times with different prices - only the last price should count`() = runTest {
         val fileContents = getFileContents("same_product_id.xml")
         val buyProductInitializerImpl = BuyProductInitializerImpl(suspendLineStorageFactory)
 
         buyProductInitializerImpl.setupXml(fileContents)
 
-        val productsDB = buyProductInitializerImpl.getProductsDB().getDatabaseAsList()
-        val ordersDB = buyProductInitializerImpl.getOrdersDB().getDatabaseAsList()
-        val usersDB = buyProductInitializerImpl.getUsersDB().getDatabaseAsList()
+        val productsDB = buyProductInitializerImpl.getProductsStorageLibraryAsList()
+        val ordersDB = buyProductInitializerImpl.getOrdersStorageLibraryAsList()
+        val usersDB = buyProductInitializerImpl.getUsersStorageLibraryAsList()
 
         Assertions.assertEquals("iphone", productsDB[0])
         Assertions.assertEquals("40", productsDB[1])
@@ -102,9 +102,9 @@ class BuyProductInitializerImplTest {
 
         buyProductInitializerImpl.setupJson(fileContents)
 
-        val productsDB = buyProductInitializerImpl.getProductsDB().getDatabaseAsList()
-        val ordersDB = buyProductInitializerImpl.getOrdersDB().getDatabaseAsList()
-        val usersDB = buyProductInitializerImpl.getUsersDB().getDatabaseAsList()
+        val productsDB = buyProductInitializerImpl.getProductsStorageLibraryAsList()
+        val ordersDB = buyProductInitializerImpl.getOrdersStorageLibraryAsList()
+        val usersDB = buyProductInitializerImpl.getUsersStorageLibraryAsList()
 
         Assertions.assertEquals("iphone", productsDB[0])
         Assertions.assertEquals("1000", productsDB[1])
@@ -126,9 +126,9 @@ class BuyProductInitializerImplTest {
 
         buyProductInitializerImpl.setupXml(fileContents)
 
-        val productsDB = buyProductInitializerImpl.getProductsDB().getDatabaseAsList()
-        val ordersDB = buyProductInitializerImpl.getOrdersDB().getDatabaseAsList()
-        val usersDB = buyProductInitializerImpl.getUsersDB().getDatabaseAsList()
+        val productsDB = buyProductInitializerImpl.getProductsStorageLibraryAsList()
+        val ordersDB = buyProductInitializerImpl.getOrdersStorageLibraryAsList()
+        val usersDB = buyProductInitializerImpl.getUsersStorageLibraryAsList()
 
         Assertions.assertEquals(0, productsDB.size)
 
@@ -144,9 +144,9 @@ class BuyProductInitializerImplTest {
 
         buyProductInitializerImpl.setupJson(fileContents)
 
-        val productsDB = buyProductInitializerImpl.getProductsDB().getDatabaseAsList()
-        val ordersDB = buyProductInitializerImpl.getOrdersDB().getDatabaseAsList()
-        val usersDB = buyProductInitializerImpl.getUsersDB().getDatabaseAsList()
+        val productsDB = buyProductInitializerImpl.getProductsStorageLibraryAsList()
+        val ordersDB = buyProductInitializerImpl.getOrdersStorageLibraryAsList()
+        val usersDB = buyProductInitializerImpl.getUsersStorageLibraryAsList()
 
         Assertions.assertEquals("android", productsDB[0])
         Assertions.assertEquals("500", productsDB[1])
@@ -177,9 +177,9 @@ class BuyProductInitializerImplTest {
 
         buyProductInitializerImpl.setupXml(fileContents)
 
-        val productsDB = buyProductInitializerImpl.getProductsDB().getDatabaseAsList()
-        val ordersDB = buyProductInitializerImpl.getOrdersDB().getDatabaseAsList()
-        val usersDB = buyProductInitializerImpl.getUsersDB().getDatabaseAsList()
+        val productsDB = buyProductInitializerImpl.getProductsStorageLibraryAsList()
+        val ordersDB = buyProductInitializerImpl.getOrdersStorageLibraryAsList()
+        val usersDB = buyProductInitializerImpl.getUsersStorageLibraryAsList()
 
         Assertions.assertEquals("iphone", productsDB[0])
         Assertions.assertEquals("1000", productsDB[1])
@@ -201,9 +201,9 @@ class BuyProductInitializerImplTest {
 
         buyProductInitializerImpl.setupJson(fileContents)
 
-        val productsDB = buyProductInitializerImpl.getProductsDB().getDatabaseAsList()
-        val ordersDB = buyProductInitializerImpl.getOrdersDB().getDatabaseAsList()
-        val usersDB = buyProductInitializerImpl.getUsersDB().getDatabaseAsList()
+        val productsDB = buyProductInitializerImpl.getProductsStorageLibraryAsList()
+        val ordersDB = buyProductInitializerImpl.getOrdersStorageLibraryAsList()
+        val usersDB = buyProductInitializerImpl.getUsersStorageLibraryAsList()
 
         Assertions.assertEquals("iphone", productsDB[0])
         Assertions.assertEquals("1000", productsDB[1])
@@ -221,9 +221,9 @@ class BuyProductInitializerImplTest {
 
         buyProductInitializerImpl.setupXml(fileContents)
 
-        val productsDB = buyProductInitializerImpl.getProductsDB().getDatabaseAsList()
-        val ordersDB = buyProductInitializerImpl.getOrdersDB().getDatabaseAsList()
-        val usersDB = buyProductInitializerImpl.getUsersDB().getDatabaseAsList()
+        val productsDB = buyProductInitializerImpl.getProductsStorageLibraryAsList()
+        val ordersDB = buyProductInitializerImpl.getOrdersStorageLibraryAsList()
+        val usersDB = buyProductInitializerImpl.getUsersStorageLibraryAsList()
 
         Assertions.assertEquals("iphone", productsDB[0])
         Assertions.assertEquals("1000", productsDB[1])
@@ -245,9 +245,9 @@ class BuyProductInitializerImplTest {
 
         buyProductInitializerImpl.setupJson(fileContents)
 
-        val productsDB = buyProductInitializerImpl.getProductsDB().getDatabaseAsList()
-        val ordersDB = buyProductInitializerImpl.getOrdersDB().getDatabaseAsList()
-        val usersDB = buyProductInitializerImpl.getUsersDB().getDatabaseAsList()
+        val productsDB = buyProductInitializerImpl.getProductsStorageLibraryAsList()
+        val ordersDB = buyProductInitializerImpl.getOrdersStorageLibraryAsList()
+        val usersDB = buyProductInitializerImpl.getUsersStorageLibraryAsList()
 
         Assertions.assertEquals("iphone", productsDB[0])
         Assertions.assertEquals("1000", productsDB[1])

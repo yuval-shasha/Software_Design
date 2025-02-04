@@ -3,28 +3,38 @@ package il.ac.technion.cs.sd.buy.app
 import com.google.inject.Inject
 import il.ac.technion.cs.sd.buy.external.SuspendLineStorageFactory
 import il.ac.technion.cs.sd.buy.lib.StorageLibrary
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
+import java.util.concurrent.ConcurrentHashMap
 
-class BuyProductReaderImpl @Inject constructor(suspendLineStorageFactory: SuspendLineStorageFactory) : BuyProductReader {
-    private var productsDB = StorageLibrary(suspendLineStorageFactory, "products")
-    private var ordersDB = StorageLibrary(suspendLineStorageFactory, "orders")
-    private var usersDB = StorageLibrary(suspendLineStorageFactory, "users")
+class BuyProductReaderImpl @Inject constructor(private val suspendLineStorageFactory: SuspendLineStorageFactory) : BuyProductReader {
+    private val productsStorageLibrary = StorageLibrary(suspendLineStorageFactory, "products")
+    private val ordersStorageLibrary = StorageLibrary(suspendLineStorageFactory, "orders")
+    private val usersStorageLibrary = StorageLibrary(suspendLineStorageFactory, "users")
 
 
-    /** Returns true iff the given ID is that of a valid (possibly canceled) order. */
+    /** Returns true if the given ID is that of a valid (possibly canceled) order. */
     override suspend fun isValidOrderId(orderId: String): Boolean {
-        return ordersDB.getDataFromSuspendLineStorage(orderId) != null
+        return ordersStorageLibrary.getMainDataFromSuspendLineStorage(orderId) != null
     }
 
-    /** Returns true iff the given ID is that of a valid and canceled order. */
+    /** Returns true if the given ID is that of a valid and canceled order. */
     override suspend fun isCanceledOrder(orderId: String): Boolean {
-        val orderLists = ordersDB.getDataFromSuspendLineStorage(orderId) ?: return false
-        return orderLists[1].contains(CANCEL_ORDER_AMOUNT)
+        return ordersStorageLibrary.getListDataFromSuspendLineStorage(orderId)
+            ?.contains(CANCEL_ORDER_AMOUNT) == true
     }
 
-    /** Returns true iff the given ID is that of a valid order that was modified */
+    /** Returns true if the given ID is that of a valid order that was modified */
     override suspend fun isModifiedOrder(orderId: String): Boolean {
-        val orderLists = ordersDB.getDataFromSuspendLineStorage(orderId) ?: return false
-        return orderLists[1].length > 1
+        val orderHistory = ordersStorageLibrary.getListDataFromSuspendLineStorage(orderId)?.split(" ")
+        return if (orderHistory == null) {
+            false
+        } else if (orderHistory.contains(CANCEL_ORDER_AMOUNT) == true) {
+            orderHistory.size > 2
+        } else {
+            orderHistory.size > 1
+        }
     }
 
     /**
@@ -33,15 +43,17 @@ class BuyProductReaderImpl @Inject constructor(suspendLineStorageFactory: Suspen
      * found, returns null.
      */
     override suspend fun getNumberOfProductOrdered(orderId: String): Int? {
-        val orderLists = ordersDB.getDataFromSuspendLineStorage(orderId) ?: return null
-        val amountHistory = orderLists[1].split(" ")
+        val amountHistory = ordersStorageLibrary
+            .getListDataFromSuspendLineStorage(orderId)
+            ?.split(" ")
+            ?: return null
+
         val indexOfLastAmount = amountHistory.size - 1
         val amount = amountHistory[indexOfLastAmount].toInt()
-        if (amount < 0) {
-            return -(amountHistory[indexOfLastAmount - 1].toInt())
-        }
-        else {
-            return amount
+        return if (amount < 0) {
+            -(amountHistory[indexOfLastAmount - 1].toInt())
+        } else {
+            amount
         }
     }
 
@@ -50,9 +62,11 @@ class BuyProductReaderImpl @Inject constructor(suspendLineStorageFactory: Suspen
      * appends -1 to the list. If the order ID is invalid, returns an empty list.
      */
     override suspend fun getHistoryOfOrder(orderId: String): List<Int> {
-        val orderLists = ordersDB.getDataFromSuspendLineStorage(orderId) ?: return emptyList()
-        val amounts = orderLists[1].split(" ").map { it.toInt() }
-        return amounts
+        return ordersStorageLibrary
+            .getListDataFromSuspendLineStorage(orderId)
+            ?.split(" ")
+            ?.map { it.toInt() }
+            ?: emptyList()
     }
 
     /**
@@ -60,47 +74,66 @@ class BuyProductReaderImpl @Inject constructor(suspendLineStorageFactory: Suspen
      * If the user is not found, returns an empty list.
      */
     override suspend fun getOrderIdsForUser(userId: String): List<String> {
-        val userLists = usersDB.getDataFromSuspendLineStorage(userId) ?: return emptyList()
-        return userLists[1].split(" ")
+        return usersStorageLibrary
+            .getListDataFromSuspendLineStorage(userId)
+            ?.split(" ")
+            ?: return emptyList()
     }
 
     /**
      * Returns the total amount of money spent by the user, i.e., the sum of (cost of each product * items purchased).
      * If the user is not found, returns 0. Canceled orders are not included in this sum.
      */
-    override suspend fun getTotalAmountSpentByUser(userId: String): Long {
-        val userList = usersDB.getDataFromSuspendLineStorage(userId) ?: return 0
-        var sum : Long = 0
-        userList[1].split(" ")
-            .filter { !isCanceledOrder(it) }
-            .forEach { orderId ->
-                val orderDetails = ordersDB.getDataFromSuspendLineStorage(orderId)?.get(0)
-                val productId = orderDetails?.split(" ")[1]
-                var numberOfProducts = getNumberOfProductOrdered(orderId)?.toLong()
-                if (numberOfProducts != null && numberOfProducts < 0) {
-                    numberOfProducts = 0
-                }
-                val price = productsDB.getDataFromSuspendLineStorage(productId.toString())?.get(0)?.toLong()
+    override suspend fun getTotalAmountSpentByUser(userId: String): Long = coroutineScope {
+        return@coroutineScope usersStorageLibrary
+            .getListDataFromSuspendLineStorage(userId)
+            ?.split(" ")
+            ?.sumOf { orderId ->
+                val productId = async { ordersStorageLibrary
+                    .getMainDataFromSuspendLineStorage(orderId)
+                    ?.split(" ")[1]
+                    ?: "" }
 
-                if (numberOfProducts != null && price != null) {
-                    sum += (numberOfProducts * price)
+                val numberOfItemsPurchased = async {
+                    var numberOfProductOrdered = getNumberOfProductOrdered(orderId)?.toLong()
+                    if (numberOfProductOrdered == null || numberOfProductOrdered < 0)
+                    {
+                        numberOfProductOrdered = 0L
+                    }
+                    numberOfProductOrdered
                 }
+
+                val price = async { productsStorageLibrary
+                    .getMainDataFromSuspendLineStorage(productId.await())
+                    ?.toLong()
+                    ?: 0L }
+
+                numberOfItemsPurchased.await().times(price.await())
             }
-        return sum
+            ?: 0L
     }
 
     /**
      * Returns the list of user IDs that purchased this product. If the product ID isn't found, return an empty list.
      * Users who only made a purchase that was later canceled do not appear in this list.
      */
-    override suspend fun getUsersThatPurchased(productId: String): List<String> {
-        val productOrdersIds = productsDB.getDataFromSuspendLineStorage(productId)?.get(1)?.split(" ") ?: return emptyList()
-        val notCanceledOrderIds = productOrdersIds.filter { !isCanceledOrder(it) }
-        return notCanceledOrderIds
-            .map { orderId ->
-                ordersDB.getDataFromSuspendLineStorage(orderId)?.get(0)?.split(" ")?.get(0) ?: ""
+    override suspend fun getUsersThatPurchased(productId: String): List<String> = coroutineScope {
+        return@coroutineScope productsStorageLibrary
+            .getListDataFromSuspendLineStorage(productId)
+            ?.split(" ")
+            ?.filter { !isCanceledOrder(it) }
+            ?.map { orderId ->
+                async {
+                    ordersStorageLibrary
+                        .getMainDataFromSuspendLineStorage(orderId)
+                        ?.split(" ")
+                        ?.get(0)
+                        ?: ""
+                }
             }
-            .toList()
+            ?.awaitAll()
+            ?.toList()
+            ?: emptyList()
     }
 
     /**
@@ -108,40 +141,56 @@ class BuyProductReaderImpl @Inject constructor(suspendLineStorageFactory: Suspen
      * If the product is not found, returns an empty list.
      */
     override suspend fun getOrderIdsThatPurchased(productId: String): List<String> {
-        val productOrderIds = productsDB.getDataFromSuspendLineStorage(productId)?.get(1)?.split(" ") ?: return emptyList()
-        return productOrderIds
+        return productsStorageLibrary
+            .getListDataFromSuspendLineStorage(productId)
+            ?.split(" ")
+            ?: emptyList()
     }
 
     /**
      * Returns the total count of purchased items of the given product ID. Canceled orders do not contribute to this
      * sum. If the product ID is not found, returns null.
      */
-    override suspend fun getTotalNumberOfItemsPurchased(productId: String): Long? {
-        val productOrderIds = productsDB.getDataFromSuspendLineStorage(productId)?.get(1)?.split(" ") ?: return null
-        var count : Long = 0
-        productOrderIds.forEach { orderId ->
-            val amountOrdered = getNumberOfProductOrdered(orderId)?.toInt()
-            if (amountOrdered != null) {
-                if (amountOrdered >= 0) {
-                    count += amountOrdered
+    override suspend fun getTotalNumberOfItemsPurchased(productId: String): Long? = coroutineScope {
+        return@coroutineScope productsStorageLibrary
+            .getListDataFromSuspendLineStorage(productId)
+            ?.split(" ")
+            ?.map { orderId ->
+                async {
+                    val amountOrdered = getNumberOfProductOrdered(orderId)?.toLong()
+                    if (amountOrdered != null && amountOrdered >= 0) {
+                        amountOrdered
+                    } else {
+                        0L
+                    }
                 }
             }
-        }
-        return count
+            ?.awaitAll()
+            ?.sum()
     }
 
     /**
-     * Returns the average number of purchased items of the give product ID. Canceled orders do not contribute to this
+     * Returns the average number of purchased items of the given product ID. Canceled orders do not contribute to this
      * average. If the product ID is not found, or it is found only in canceled orders, returns null.
      */
-    override suspend fun getAverageNumberOfItemsPurchased(productId: String): Double? {
-        val productOrderIds = productsDB.getDataFromSuspendLineStorage(productId)?.get(1)?.split(" ") ?: return null
-        productOrderIds
-            .map { orderId ->
-                getHistoryOfOrder(orderId).last()
+    override suspend fun getAverageNumberOfItemsPurchased(productId: String): Double? = coroutineScope {
+        val purchasedItemsForEachOrder = productsStorageLibrary
+            .getListDataFromSuspendLineStorage(productId)
+            ?.split(" ")
+            ?.map { orderId ->
+                async {
+                    getHistoryOfOrder(orderId).last()
+                }
             }
-            .filter { it != CANCEL_ORDER_AMOUNT.toInt() }
-            .average()
+            ?.awaitAll()
+            ?.filter { it != CANCEL_ORDER_AMOUNT.toInt() }
+
+            if (purchasedItemsForEachOrder == null || purchasedItemsForEachOrder.isEmpty()) {
+                return@coroutineScope null
+            }
+            else {
+                return@coroutineScope purchasedItemsForEachOrder.average()
+            }
     }
 
     /**
@@ -150,11 +199,16 @@ class BuyProductReaderImpl @Inject constructor(suspendLineStorageFactory: Suspen
      */
     override suspend fun getCancelRatioForUser(userId: String): Double? {
         val orderIdsOfUser = getOrderIdsForUser(userId)
+
         if (orderIdsOfUser.isEmpty()) {
             return null
         }
+
         val totalNumOrdersOfUser = orderIdsOfUser.size.toDouble()
-        val canceledOrdersNum = orderIdsOfUser.filter { !isCanceledOrder(it) }.size.toDouble()
+        val canceledOrdersNum = orderIdsOfUser
+            .filter { isCanceledOrder(it) }
+            .size.toDouble()
+
         return canceledOrdersNum / totalNumOrdersOfUser
     }
 
@@ -165,11 +219,16 @@ class BuyProductReaderImpl @Inject constructor(suspendLineStorageFactory: Suspen
      */
     override suspend fun getModifyRatioForUser(userId: String): Double? {
         val orderIdsOfUser = getOrderIdsForUser(userId)
+
         if (orderIdsOfUser.isEmpty()) {
             return null
         }
+
         val totalNumOrdersOfUser = orderIdsOfUser.size.toDouble()
-        val modifiedOrdersNum = orderIdsOfUser.filter { !isModifiedOrder(it) }.size.toDouble()
+        val modifiedOrdersNum = orderIdsOfUser
+            .filter { isModifiedOrder(it) && !isCanceledOrder(it) }
+            .size.toDouble()
+
         return modifiedOrdersNum / totalNumOrdersOfUser
     }
 
@@ -177,20 +236,57 @@ class BuyProductReaderImpl @Inject constructor(suspendLineStorageFactory: Suspen
      * Returns a map from product IDs to the total number of items that were purchased, across all orders. Canceled
      * orders are not included in this total. If the user ID is not found, returns an empty map.
      */
-    override suspend fun getAllItemsPurchased(userId: String): Map<String, Long> {
-        val orderIdsOfUser = getOrderIdsForUser(userId).filter { !isCanceledOrder(it) }
+    override suspend fun getAllItemsPurchased(userId: String): Map<String, Long> = coroutineScope {
+        val productToAmountMap = ConcurrentHashMap<String, Long>()
 
-        orderIdsOfUser.forEach { orderId ->
-            val productId = ordersDB.getDataFromSuspendLineStorage(orderId)?.get(0)?.split(" ")[1]
+        val deferredResults = getOrderIdsForUser(userId)
+            .map { orderId ->
+                async {
+                    val productIdInOrder = ordersStorageLibrary
+                        .getMainDataFromSuspendLineStorage(orderId)
+                        ?.split(" ")
+                        ?.get(1)
 
-        }
+                    val amountInOrder = getNumberOfProductOrdered(orderId)?.toLong()
+
+                    if (amountInOrder != null && productIdInOrder != null && amountInOrder >= 0) {
+                        productToAmountMap[productIdInOrder] =
+                            productToAmountMap.merge(productIdInOrder, amountInOrder, Long::plus) as Long
+                    }
+                }
+            }
+
+        deferredResults.awaitAll()
+        return@coroutineScope productToAmountMap
     }
 
     /**
      * Returns a map from user IDs to the total number of items that the user purchased. Canceled orders are not
      * included in this total. If the product ID is not found, returns an empty map.
      */
-    override suspend fun getItemsPurchasedByUsers(productId: String): Map<String, Long> {
-        TODO("search for product id, read 2nd line of the product")
+    override suspend fun getItemsPurchasedByUsers(productId: String): Map<String, Long> = coroutineScope {
+        val userToAmountMap = ConcurrentHashMap<String, Long>()
+
+        val deferredResults = getOrderIdsThatPurchased(productId)
+            .filter { orderId -> !isCanceledOrder(orderId) }
+            .map { orderId ->
+                async {
+                    val userIdOfOrder = ordersStorageLibrary
+                        .getMainDataFromSuspendLineStorage(orderId)
+                        ?.split(" ")
+                        ?.get(0)
+                        ?: ""
+
+                    val amountOrderedByUser = getAllItemsPurchased(userIdOfOrder)[productId]?.toLong()
+
+                    if (amountOrderedByUser != null) {
+                        userToAmountMap[userIdOfOrder] =
+                            userToAmountMap.merge(userIdOfOrder, amountOrderedByUser, Long::plus) as Long
+                    }
+                }
+            }
+
+        deferredResults.awaitAll()
+        return@coroutineScope userToAmountMap
     }
 }

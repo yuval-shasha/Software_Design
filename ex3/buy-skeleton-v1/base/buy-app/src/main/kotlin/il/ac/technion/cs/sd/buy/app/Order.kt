@@ -1,6 +1,6 @@
 package il.ac.technion.cs.sd.buy.app
 
-import il.ac.technion.cs.sd.buy.lib.KeyWithTwoDataLists
+import il.ac.technion.cs.sd.buy.lib.KeyWithTwoDataElements
 import kotlinx.serialization.Polymorphic
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -49,10 +49,10 @@ open class Order(open val type: String,
         return isCreated(ordersList) && (product != null)
     }
 
-    fun getOrderAsStorageLibraryElement(ordersList: List<Order>) : KeyWithTwoDataLists {
+    fun getOrderAsStorageLibraryElement(ordersList: List<Order>) : KeyWithTwoDataElements {
         val orderData = "$userId $productId"
         val orderHistoryList = getAmountHistory(ordersList)
-        return KeyWithTwoDataLists(orderId, orderData, orderHistoryList)
+        return KeyWithTwoDataElements(orderId, orderData, orderHistoryList)
     }
 }
 

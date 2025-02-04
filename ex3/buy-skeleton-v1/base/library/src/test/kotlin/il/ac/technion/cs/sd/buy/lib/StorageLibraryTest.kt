@@ -9,9 +9,9 @@ import kotlinx.coroutines.test.runTest
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class StorageLibraryTest {
-    private val mainDataList = ArrayList<KeyWithTwoDataLists>()
-    private var suspendLineStorageFactory = Guice.createInjector(LineStorageModule()).getInstance<SuspendLineStorageFactory>()
-    private var storageLibrary = StorageLibrary(suspendLineStorageFactory, "products")
+    private val dataList = ArrayList<KeyWithTwoDataElements>()
+    private val suspendLineStorageFactory = Guice.createInjector(LineStorageModule()).getInstance<SuspendLineStorageFactory>()
+    private val storageLibrary = StorageLibrary(suspendLineStorageFactory, "products")
 
     @BeforeAll
     fun setup() {
@@ -19,24 +19,21 @@ class StorageLibraryTest {
         dataList1.add("second")
         dataList1.add("1234567890")
         dataList1.add("#$!")
-
-        mainDataList.add(KeyWithTwoDataLists("101" , "first", dataList1))
+        dataList.add(KeyWithTwoDataElements("101" , "first", dataList1))
 
         val dataList2 = ArrayList<String>()
         dataList2.add("djvkf")
         dataList2.add("294hno2")
-
-        mainDataList.add(KeyWithTwoDataLists("f8g" , "second", dataList2))
+        dataList.add(KeyWithTwoDataElements("f8g" , "second", dataList2))
 
         val dataList3 = ArrayList<String>()
         dataList3.add("dwa0e")
-
-        mainDataList.add(KeyWithTwoDataLists("@%" , "third", dataList3))
+        dataList.add(KeyWithTwoDataElements("@%" , "third", dataList3))
     }
 
     @Test
-    fun `initializeDatabase should sort the main keys in ascending order`() = runTest {
-        storageLibrary.initializeDatabase(mainDataList)
+    fun `initializeDatabase should sort the keys in ascending order`() = runTest {
+        storageLibrary.initializeDatabase(dataList)
         val databaseAsList = storageLibrary.getDatabaseAsList()
 
         Assertions.assertEquals("101", databaseAsList[0])
@@ -53,18 +50,33 @@ class StorageLibraryTest {
     }
 
     @Test
-    fun `getDataListsFromSuspendLineStorage should return the data lists of a valid key`() = runTest {
-        storageLibrary.initializeDatabase(mainDataList)
-        val dataLists = storageLibrary.getDataFromSuspendLineStorage("f8g")
+    fun `getMainDataFromSuspendLineStorage should return the main data of a valid key`() = runTest {
+        storageLibrary.initializeDatabase(dataList)
+        val mainData = storageLibrary.getMainDataFromSuspendLineStorage("f8g")
 
-        Assertions.assertEquals("second", dataLists?.get(0))
-        Assertions.assertEquals("djvkf 294hno2", dataLists?.get(1))
+        Assertions.assertEquals("second", mainData)
     }
 
     @Test
-    fun `getDataListsFromSuspendLineStorage should return null for invalid key`() = runTest {
-        storageLibrary.initializeDatabase(mainDataList)
-        val dataLists = storageLibrary.getDataFromSuspendLineStorage("Hello")
+    fun `getMainDataFromSuspendLineStorage should return null for invalid key`() = runTest {
+        storageLibrary.initializeDatabase(dataList)
+        val dataLists = storageLibrary.getMainDataFromSuspendLineStorage("Hello")
+
+        Assertions.assertNull(dataLists)
+    }
+
+    @Test
+    fun `getListDataFromSuspendLineStorage should return the list data of a valid key`() = runTest {
+        storageLibrary.initializeDatabase(dataList)
+        val listData = storageLibrary.getListDataFromSuspendLineStorage("f8g")
+
+        Assertions.assertEquals("djvkf 294hno2", listData)
+    }
+
+    @Test
+    fun `getListDataFromSuspendLineStorage should return null for invalid key`() = runTest {
+        storageLibrary.initializeDatabase(dataList)
+        val dataLists = storageLibrary.getListDataFromSuspendLineStorage("Hello")
 
         Assertions.assertNull(dataLists)
     }
